@@ -4,30 +4,30 @@ A robust and secure billing automation and digital subscription tracking platfor
 
 ---
 
-## 🚀 Features
+## Features
 
-### 🔐 1. Authentication & Security
+###  1. Authentication & Security
 - **Secure Register & Login**: Leverages bcrypt password hashing and JWT (JSON Web Tokens) for stateful session checks.
 - **Admin Bootstrapping**: A dedicated endpoint `/auth/bootstrap-admin` for initializing the first admin account safely.
 - **Role-Based Access Control**: Standard user operations are guarded against admin operations (e.g., standard users cannot read database logs or change status of other users).
 
-### 🖥️ 2. Customer Dashboard (`/customer`)
+### 2. Customer Dashboard (`/customer`)
 - **Visual Spend Analytics**: Automatically calculates and tracks monthly spend, estimated annual bills, and lists pending payments.
 - **Plan Actions**: Allows customers to view their active digital subscriptions (e.g., Netflix, Spotify, Prime Video), pause/resume them, or add custom streaming/service bills.
 - **Account Settings**: Customers can update their details (name, password) securely.
 
-### 🛠️ 3. Admin Security Console (`/admin`)
+###  3. Admin Security Console (`/admin`)
 - **User Directory**: List all registered customer accounts with statuses (Active/Deactivated).
 - **Accounts Provisioning**: Admin can provision new customer or administrator accounts with custom passwords.
 - **Plan Management**: Admin can add, modify pricing, rename plans, or delete subscriptions for any customer directly.
 
-### 📡 4. Dedicated Subscriptions API (`/subscriptions`)
+###  4. Dedicated Subscriptions API (`/subscriptions`)
 - Structured, separate CRUD API design to retrieve and edit user subscriptions.
 - Documented in Swagger UI with specific request/response models.
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Backend**: Python 3.13+, FastAPI, Uvicorn
 - **Database**: PostgreSQL (Production) / SQLite (isolated unit testing), SQLAlchemy ORM, Alembic (Migrations)
@@ -36,7 +36,7 @@ A robust and secure billing automation and digital subscription tracking platfor
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```text
 billing-platform/
@@ -70,7 +70,7 @@ billing-platform/
 
 ---
 
-## ⚙️ Getting Started
+##  Getting Started
 
 ### 1. Prerequisites
 - Python 3.12+ installed
@@ -119,7 +119,7 @@ Open `http://127.0.0.1:8000/docs` in your browser to view the interactive FastAP
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 The test suite uses an in-memory SQLite database for maximum speed and complete isolation. Run the verification tests using the following command:
 
