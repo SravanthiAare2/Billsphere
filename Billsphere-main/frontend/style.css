@@ -1,0 +1,24 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+}
+input, select {
+  display: block;
+  margin: 8px 0;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+button {
+  padding: 8px 16px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+h2, h3 {
+  margin-top: 30px;
+}
+#plan-message, #login-message, #reg-message {
+  color: green;
+}
