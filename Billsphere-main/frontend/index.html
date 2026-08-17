@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Billing Platform Demo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="auth-section">
+  <h2>Register</h2>
+  <input type="email" id="reg-email" placeholder="Email">
+  <input type="password" id="reg-password" placeholder="Password">
+  <select id="reg-role">
+    <option value="customer">Customer</option>
+    <option value="admin">Admin</option>
+  </select>
+  <button onclick="register()">Register</button>
+  <p id="reg-message"></p>
+
+  <h2>Login</h2>
+  <input type="email" id="login-email" placeholder="Email">
+  <input type="password" id="login-password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="login-message"></p>
+</div>
+
+<div id="dashboard-section" style="display:none;">
+  <h2>Welcome — you are logged in</h2>
+  <button onclick="logout()">Logout</button>
+
+  <h3>Create a Plan (admin only)</h3>
+  <input type="text" id="plan-name" placeholder="Plan name">
+  <input type="number" id="plan-price" placeholder="Price">
+  <input type="text" id="plan-interval" placeholder="monthly / yearly">
+  <button onclick="createPlan()">Create Plan</button>
+  <p id="plan-message"></p>
+
+  <h3>All Plans</h3>
+  <button onclick="loadPlans()">Refresh Plans</button>
+  <ul id="plans-list"></ul>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
