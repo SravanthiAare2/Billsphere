@@ -1,0 +1,201 @@
+/* ============================================================
+   BILLSPHERE — PLAN DETAILS / CHECKOUT
+   Luxury Black + Gold Theme
+============================================================ */
+
+
+/* ============================================================
+   CHECKOUT PANEL
+============================================================ */
+
+.checkout-panel {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.012)
+    );
+
+  border: 1px solid rgba(214, 179, 106, 0.14);
+
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+
+/* ============================================================
+   CHECKOUT BUTTON
+============================================================ */
+
+.checkout-button {
+  background:
+    linear-gradient(
+      135deg,
+      #e7cb8b,
+      #b8904b
+    );
+
+  color: #080808;
+
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
+
+  box-shadow:
+    0 8px 25px rgba(184, 144, 75, 0.15);
+}
+
+.checkout-button:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 12px 30px rgba(184, 144, 75, 0.22);
+}
+
+.checkout-button:active {
+  transform: translateY(0);
+}
+
+.checkout-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
+
+/* ============================================================
+   CHECKOUT INPUT
+============================================================ */
+
+.checkout-input {
+  background: rgba(255, 255, 255, 0.025);
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  color: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.checkout-input:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.checkout-input:focus {
+  border-color: rgba(214, 179, 106, 0.40);
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  box-shadow:
+    0 0 0 3px rgba(214, 179, 106, 0.06);
+}
+
+
+/* ============================================================
+   INPUT PLACEHOLDER
+============================================================ */
+
+.checkout-input::placeholder {
+  color: rgba(255, 255, 255, 0.20);
+}
+
+
+/* ============================================================
+   SELECT
+============================================================ */
+
+select.checkout-input {
+  cursor: pointer;
+}
+
+select.checkout-input option {
+  background: #111111;
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   SCROLLBAR
+============================================================ */
+
+.checkout-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.checkout-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.checkout-panel::-webkit-scrollbar-thumb {
+  background: rgba(214, 179, 106, 0.20);
+  border-radius: 999px;
+}
+
+.checkout-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(214, 179, 106, 0.35);
+}
+
+
+/* ============================================================
+   MOBILE RESPONSIVE
+============================================================ */
+
+@media (max-width: 768px) {
+  .checkout-panel {
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .checkout-button {
+    min-height: 44px;
+  }
+
+  .checkout-input {
+    min-height: 44px;
+  }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+============================================================ */
+
+@media (max-width: 480px) {
+  .checkout-panel {
+    padding: 16px;
+  }
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+============================================================ */
+
+.checkout-button:focus-visible,
+.checkout-input:focus-visible {
+  outline: 2px solid rgba(214, 179, 106, 0.55);
+  outline-offset: 2px;
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .checkout-button,
+  .checkout-input {
+    transition: none;
+  }
+}
