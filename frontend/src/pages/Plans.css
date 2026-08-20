@@ -1,0 +1,1486 @@
+/* ==========================================================
+   BILLSPHERE
+   CUSTOMER PLANS
+   LUXURY MATTE BLACK + CHAMPAGNE GOLD
+   ========================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   PAGE
+   ========================================================== */
+
+.plans-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 8px 0 70px;
+
+  color: #f5f1e8;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* ==========================================================
+   TOP BAR
+   ========================================================== */
+
+.plans-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 48px;
+}
+
+.plans-brand {
+  color: #d4af37;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 3px;
+}
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+
+.plans-hero {
+  text-align: center;
+
+  max-width: 760px;
+
+  margin: 0 auto 38px;
+}
+
+.plans-eyebrow {
+  color: #d4af37;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 3px;
+
+  margin-bottom: 18px;
+}
+
+.plans-hero h1 {
+  margin: 0;
+
+  font-size: clamp(
+    40px,
+    5vw,
+    62px
+  );
+
+  line-height: 1;
+
+  letter-spacing: -3px;
+
+  font-weight: 700;
+}
+
+.plans-hero h1 span {
+  color: #d4af37;
+}
+
+.plans-hero p {
+  margin: 20px auto 0;
+
+  max-width: 620px;
+
+  color: #918c83;
+
+  font-size: 15px;
+
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   SUBSCRIPTION JOURNEY
+   ========================================================== */
+
+.plans-journey {
+  max-width: 1120px;
+
+  margin: 0 auto 42px;
+
+  padding: 24px;
+
+  border-radius: 18px;
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.12);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.025),
+      rgba(255, 255, 255, 0.008)
+    );
+}
+
+.journey-title {
+  margin-bottom: 20px;
+
+  color: #d4af37;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+
+  text-transform: uppercase;
+}
+
+.journey-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 12px;
+}
+
+.journey-item {
+  display: flex;
+
+  gap: 13px;
+
+  padding: 15px;
+
+  border-radius: 12px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.05);
+
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.journey-number {
+  flex: 0 0 auto;
+
+  color: #d4af37;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.journey-item h4 {
+  margin: 0;
+
+  color: #e9e3d7;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.journey-item p {
+  margin: 6px 0 0;
+
+  color: #77736c;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+/* ==========================================================
+   PLATFORM SELECTOR
+   ========================================================== */
+
+.platform-selector-section {
+  width: 100%;
+  max-width: 620px;
+
+  margin: 0 auto 45px;
+}
+
+.platform-selector-section label {
+  display: block;
+
+  margin-bottom: 11px;
+
+  color: #c9c3b8;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.platform-select-wrapper {
+  position: relative;
+}
+
+.platform-select-button {
+  width: 100%;
+
+  height: 58px;
+
+  padding: 0 20px;
+
+  border-radius: 14px;
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.35);
+
+  background: #11110f;
+
+  color: #f5f1e8;
+
+  font-size: 15px;
+
+  font-weight: 500;
+
+  outline: none;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  transition: 0.25s ease;
+}
+
+.platform-select-button:hover {
+  border-color:
+    rgba(212, 175, 55, 0.65);
+}
+
+.platform-select-button svg {
+  color: #d4af37;
+
+  transition: 0.25s ease;
+}
+
+.platform-select-button svg.rotate {
+  transform: rotate(180deg);
+}
+
+/* ==========================================================
+   PLATFORM DROPDOWN
+   ========================================================== */
+
+.platform-dropdown {
+  position: absolute;
+
+  z-index: 100;
+
+  left: 0;
+  right: 0;
+
+  top: calc(100% + 8px);
+
+  overflow: hidden;
+
+  border-radius: 16px;
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.18);
+
+  background: #11110f;
+
+  box-shadow:
+    0 30px 80px
+      rgba(0, 0, 0, 0.65);
+}
+
+.platform-search-box {
+  height: 52px;
+
+  padding: 0 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  border-bottom: 1px solid
+    rgba(255, 255, 255, 0.06);
+}
+
+.platform-search-box svg {
+  color: #6f6a61;
+
+  flex: 0 0 auto;
+}
+
+.platform-search-box input {
+  width: 100%;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #f5f1e8;
+
+  font-size: 12px;
+}
+
+.platform-search-box input::placeholder {
+  color: #555149;
+}
+
+.platform-search-box button {
+  border: none;
+
+  background: transparent;
+
+  color: #666158;
+
+  cursor: pointer;
+}
+
+.platform-dropdown-list {
+  max-height: 310px;
+
+  overflow-y: auto;
+
+  padding: 8px;
+}
+
+.platform-dropdown-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.platform-dropdown-list::-webkit-scrollbar-thumb {
+  background:
+    rgba(212, 175, 55, 0.25);
+
+  border-radius: 10px;
+}
+
+.platform-option {
+  width: 100%;
+
+  border: none;
+
+  background: transparent;
+
+  color: #aaa49a;
+
+  padding: 10px 11px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  text-align: left;
+
+  transition: 0.2s ease;
+}
+
+.platform-option:hover {
+  background:
+    rgba(255, 255, 255, 0.035);
+
+  color: #f5f1e8;
+}
+
+.platform-option.selected {
+  background:
+    rgba(212, 175, 55, 0.09);
+
+  color: #d4af37;
+}
+
+.platform-option svg {
+  margin-left: auto;
+
+  color: #d4af37;
+}
+
+.platform-option-icon {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 auto;
+
+  border-radius: 8px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.14);
+
+  background:
+    rgba(212, 175, 55, 0.05);
+
+  color: #d4af37;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+.platform-option-name {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-size: 12px;
+}
+
+.platform-dropdown-footer {
+  padding: 10px 14px;
+
+  border-top: 1px solid
+    rgba(255, 255, 255, 0.05);
+
+  color: #555149;
+
+  font-size: 9px;
+}
+
+.platform-no-results {
+  padding: 35px 15px;
+
+  text-align: center;
+
+  color: #555149;
+}
+
+.platform-no-results svg {
+  margin: 0 auto;
+}
+
+.platform-no-results p {
+  margin: 10px 0 4px;
+
+  color: #aaa49a;
+
+  font-size: 12px;
+}
+
+.platform-no-results span {
+  font-size: 10px;
+}
+
+.platform-helper {
+  margin-top: 13px;
+
+  text-align: center;
+
+  color: #68645e;
+
+  font-size: 12px;
+}
+
+/* ==========================================================
+   INITIAL EMPTY STATE
+   ========================================================== */
+
+.platform-empty {
+  max-width: 620px;
+
+  margin: 0 auto;
+
+  padding: 60px 30px;
+
+  text-align: center;
+
+  border-radius: 22px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.035),
+      rgba(255, 255, 255, 0.01)
+    );
+}
+
+.empty-icon {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto 20px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.4);
+
+  color: #d4af37;
+}
+
+.platform-empty h2 {
+  margin: 0 0 10px;
+
+  font-size: 22px;
+}
+
+.platform-empty p {
+  margin: 0;
+
+  color: #77736c;
+
+  line-height: 1.7;
+
+  font-size: 13px;
+}
+
+/* ==========================================================
+   SELECTED PLATFORM
+   ========================================================== */
+
+.platform-plans {
+  animation:
+    fadeUp 0.45s ease;
+}
+
+.selected-platform-header {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-bottom: 25px;
+}
+
+.platform-label {
+  color: #d4af37;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 2.5px;
+
+  margin-bottom: 8px;
+}
+
+.selected-platform-header h2 {
+  margin: 0;
+
+  font-size: 34px;
+
+  letter-spacing: -1px;
+}
+
+.selected-platform-header p {
+  margin: 8px 0 0;
+
+  color: #77736c;
+
+  font-size: 14px;
+}
+
+.change-platform-button {
+  border: 1px solid
+    rgba(212, 175, 55, 0.25);
+
+  background: transparent;
+
+  color: #aaa49a;
+
+  border-radius: 9px;
+
+  padding: 10px 15px;
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+  transition: 0.25s ease;
+}
+
+.change-platform-button:hover {
+  color: #d4af37;
+
+  border-color: #d4af37;
+}
+
+/* ==========================================================
+   BILLING SELECTOR
+   ========================================================== */
+
+.billing-selector {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 24px;
+
+  padding: 13px 15px;
+
+  border-radius: 12px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.06);
+
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.billing-selector > span {
+  color: #77736c;
+
+  font-size: 11px;
+
+  font-weight: 600;
+}
+
+.billing-toggle {
+  display: flex;
+
+  padding: 3px;
+
+  border-radius: 8px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.billing-toggle button {
+  border: none;
+
+  border-radius: 6px;
+
+  padding: 7px 14px;
+
+  background: transparent;
+
+  color: #68645e;
+
+  cursor: pointer;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.billing-toggle button.active {
+  background:
+    rgba(212, 175, 55, 0.13);
+
+  color: #d4af37;
+}
+
+/* ==========================================================
+   PLAN GRID
+   ========================================================== */
+
+.plans-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 18px;
+
+  align-items: stretch;
+}
+
+/* ==========================================================
+   PLAN CARD
+   ========================================================== */
+
+.plan-card {
+  position: relative;
+
+  display: flex;
+
+  flex-direction: column;
+
+  min-height: 580px;
+
+  padding: 30px 24px 22px;
+
+  border-radius: 20px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.075);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.012)
+    );
+
+  box-shadow:
+    0 25px 60px
+      rgba(0, 0, 0, 0.25);
+
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.plan-card:hover {
+  transform:
+    translateY(-5px);
+
+  border-color:
+    rgba(212, 175, 55, 0.35);
+
+  box-shadow:
+    0 30px 70px
+      rgba(0, 0, 0, 0.45);
+}
+
+/* ==========================================================
+   STANDARD
+   ========================================================== */
+
+.standard-plan {
+  border-color:
+    rgba(212, 175, 55, 0.22);
+}
+
+/* ==========================================================
+   PREMIUM
+   ========================================================== */
+
+.premium-plan {
+  border-color:
+    rgba(212, 175, 55, 0.65);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(212, 175, 55, 0.095),
+      rgba(255, 255, 255, 0.018)
+    );
+
+  box-shadow:
+    0 25px 80px
+      rgba(212, 175, 55, 0.08);
+}
+
+.premium-plan:hover {
+  border-color: #d4af37;
+
+  box-shadow:
+    0 35px 90px
+      rgba(212, 175, 55, 0.15);
+}
+
+/* ==========================================================
+   POPULAR BADGE
+   ========================================================== */
+
+.popular-badge {
+  position: absolute;
+
+  top: 0;
+  left: 50%;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+
+  padding: 6px 14px;
+
+  border-radius: 30px;
+
+  background: #d4af37;
+
+  color: #090909;
+
+  font-size: 9px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.4px;
+
+  white-space: nowrap;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+/* ==========================================================
+   CARD HEADER
+   ========================================================== */
+
+.plan-card-header {
+  min-height: 145px;
+}
+
+.plan-icon {
+  width: 40px;
+  height: 40px;
+
+  margin-bottom: 17px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background:
+    rgba(212, 175, 55, 0.08);
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.18);
+
+  color: #d4af37;
+}
+
+.plan-name {
+  color: #f5f1e8;
+
+  font-size: 20px;
+
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1.4px;
+}
+
+.plan-card-header p {
+  margin: 10px 0 0;
+
+  color: #858078;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+/* ==========================================================
+   PRICE
+   ========================================================== */
+
+.plan-price {
+  display: flex;
+
+  align-items: baseline;
+
+  gap: 6px;
+
+  margin: 20px 0 9px;
+}
+
+.price {
+  color: #f6f0df;
+
+  font-size: 37px;
+
+  font-weight: 700;
+
+  letter-spacing: -1.5px;
+}
+
+.billing {
+  color: #77736c;
+
+  font-size: 12px;
+}
+
+/* ==========================================================
+   TRIAL
+   ========================================================== */
+
+.trial-badge {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  width: fit-content;
+
+  margin-bottom: 12px;
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  background:
+    rgba(212, 175, 55, 0.08);
+
+  color: #d4af37;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+/* ==========================================================
+   FEATURES
+   ========================================================== */
+
+.feature-divider {
+  height: 1px;
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  margin: 17px 0 20px;
+}
+
+.features {
+  flex: 1;
+
+  max-height: 300px;
+
+  overflow-y: auto;
+
+  padding-right: 5px;
+}
+
+.features::-webkit-scrollbar {
+  width: 4px;
+}
+
+.features::-webkit-scrollbar-thumb {
+  background:
+    rgba(212, 175, 55, 0.22);
+
+  border-radius: 10px;
+}
+
+.features h4 {
+  margin: 0 0 16px;
+
+  color: #c8c2b6;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1.3px;
+}
+
+.feature {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+
+  color: #a7a197;
+
+  font-size: 12px;
+
+  line-height: 1.45;
+}
+
+.check {
+  flex: 0 0 auto;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 17px;
+  height: 17px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(212, 175, 55, 0.1);
+
+  color: #d4af37;
+}
+
+/* ==========================================================
+   LIMITS
+   ========================================================== */
+
+.limit-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding-top: 10px;
+
+  margin-top: 10px;
+
+  border-top: 1px solid
+    rgba(255, 255, 255, 0.045);
+
+  font-size: 10px;
+}
+
+.limit-icon {
+  color: #d4af37;
+}
+
+.limit-label {
+  flex: 1;
+
+  color: #77736c;
+}
+
+.limit-value {
+  color: #a7a197;
+
+  font-weight: 600;
+}
+
+/* ==========================================================
+   CHOOSE PLAN
+   ========================================================== */
+
+.choose-plan-button {
+  width: 100%;
+
+  height: 48px;
+
+  margin-top: 20px;
+
+  border-radius: 10px;
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.3);
+
+  background: transparent;
+
+  color: #ddd6c7;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.5px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  transition: 0.25s ease;
+}
+
+.choose-plan-button:hover {
+  background:
+    rgba(212, 175, 55, 0.08);
+
+  border-color: #d4af37;
+
+  color: #d4af37;
+}
+
+.choose-plan-button:disabled {
+  cursor: wait;
+
+  opacity: 0.65;
+}
+
+.gold-button {
+  background: #d4af37;
+
+  border-color: #d4af37;
+
+  color: #080808;
+}
+
+.gold-button:hover {
+  background: #e2c45d;
+
+  border-color: #e2c45d;
+
+  color: #080808;
+}
+
+.review-note {
+  margin-top: 10px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  color: #555149;
+
+  font-size: 9px;
+}
+
+.spin-icon {
+  animation:
+    spin 0.8s linear infinite;
+}
+
+/* ==========================================================
+   SUBSCRIPTION FLOW
+   ========================================================== */
+
+.subscription-flow {
+  margin-top: 45px;
+
+  padding: 28px;
+
+  border-radius: 20px;
+
+  border: 1px solid
+    rgba(212, 175, 55, 0.12);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.03),
+      rgba(255, 255, 255, 0.008)
+    );
+}
+
+.flow-eyebrow {
+  color: #d4af37;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+.subscription-flow h3 {
+  margin: 7px 0 0;
+
+  color: #f5f1e8;
+
+  font-size: 21px;
+}
+
+.subscription-flow-header p {
+  margin: 8px 0 0;
+
+  color: #77736c;
+
+  font-size: 12px;
+}
+
+.flow-steps {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+
+  margin-top: 24px;
+}
+
+.flow-step {
+  padding: 18px;
+
+  border-radius: 12px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.05);
+
+  background:
+    rgba(255, 255, 255, 0.015);
+}
+
+.flow-step-number {
+  color: #d4af37;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.flow-step h4 {
+  margin: 8px 0 0;
+
+  color: #d9d2c5;
+
+  font-size: 12px;
+}
+
+.flow-step p {
+  margin: 7px 0 0;
+
+  color: #68645e;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+/* ==========================================================
+   LOADING
+   ========================================================== */
+
+.plans-loading {
+  min-height: 400px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 18px;
+}
+
+.loading-ring {
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+
+  border: 2px solid
+    rgba(212, 175, 55, 0.15);
+
+  border-top-color: #d4af37;
+
+  animation:
+    spin 0.8s linear infinite;
+}
+
+.plans-loading p {
+  color: #77736c;
+
+  font-size: 13px;
+}
+
+/* ==========================================================
+   NO PLANS
+   ========================================================== */
+
+.no-plans {
+  text-align: center;
+
+  padding: 65px 25px;
+
+  border-radius: 20px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+
+  background:
+    rgba(255, 255, 255, 0.018);
+
+  color: #d4af37;
+}
+
+.no-plans h3 {
+  margin: 14px 0 8px;
+
+  color: #f5f1e8;
+}
+
+.no-plans p {
+  margin: 0 auto 20px;
+
+  max-width: 450px;
+
+  color: #858078;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+.retry-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  border: 1px solid #d4af37;
+
+  background: transparent;
+
+  color: #d4af37;
+
+  padding: 10px 18px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.retry-button:hover {
+  background: #d4af37;
+
+  color: #080808;
+}
+
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 1100px) {
+  .plans-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .journey-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .flow-steps {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 700px) {
+  .plans-page {
+    padding-bottom: 35px;
+  }
+
+  .plans-top-bar {
+    margin-bottom: 30px;
+  }
+
+  .plans-brand {
+    font-size: 10px;
+  }
+
+  .plans-hero h1 {
+    font-size: 46px;
+  }
+
+  .plans-hero p {
+    font-size: 13px;
+  }
+
+  .journey-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-platform-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .billing-selector {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 10px;
+  }
+
+  .plan-card {
+    min-height: auto;
+  }
+
+  .subscription-flow {
+    padding: 20px;
+  }
+
+  .flow-steps {
+    grid-template-columns: 1fr;
+  }
+}

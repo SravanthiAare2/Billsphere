@@ -1,0 +1,651 @@
+@import "tailwindcss";
+
+/* ============================================================
+   BILLSPHERE GLOBAL THEME
+============================================================ */
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+
+  color: #f7f2e2;
+  background: #050503;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: #050503;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #050503;
+  color: #f7f2e2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ============================================================
+   SCROLLBAR
+============================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050503;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #393728;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8f7a32;
+}
+
+/* ============================================================
+   SELECTION
+============================================================ */
+
+::selection {
+  background: rgba(212, 175, 55, 0.25);
+  color: #f7f2e2;
+}
+
+/* ============================================================
+   FOCUS
+============================================================ */
+
+:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   BILLSPHERE BUTTONS
+============================================================ */
+
+/*
+  IMPORTANT:
+  Buttons are intentionally DARK GOLD instead of pale gold.
+  White text remains highly visible.
+*/
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  min-height: 46px;
+  padding: 0.75rem 1.5rem;
+
+  border: 1px solid rgba(212, 175, 55, 0.65);
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6f5a1d 0%,
+      #9a7b24 45%,
+      #6f5718 100%
+    );
+
+  color: #ffffff;
+
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+
+  box-shadow:
+    0 8px 30px rgba(212, 175, 55, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #856d25 0%,
+      #b08d2e 48%,
+      #80651d 100%
+    );
+
+  border-color: rgba(232, 217, 160, 0.8);
+
+  box-shadow:
+    0 14px 40px rgba(212, 175, 55, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   SECONDARY / GHOST BUTTON
+============================================================ */
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  min-height: 46px;
+  padding: 0.75rem 1.5rem;
+
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  color: #f7f2e2;
+
+  font-size: 0.875rem;
+  font-weight: 700;
+
+  backdrop-filter: blur(14px);
+
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.btn-ghost:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(212, 175, 55, 0.55);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.09),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================================
+   GOLD TEXT
+============================================================ */
+
+.gold-text {
+  background:
+    linear-gradient(
+      90deg,
+      #f7f2e2 0%,
+      #e8d9a0 45%,
+      #d4af37 100%
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  color: transparent;
+}
+
+/* ============================================================
+   SPOTLIGHT
+============================================================ */
+
+.spotlight {
+  position: fixed;
+  inset: 0;
+
+  pointer-events: none;
+  z-index: 1;
+
+  background:
+    radial-gradient(
+      circle at 50% 15%,
+      rgba(212, 175, 55, 0.10),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 85% 35%,
+      rgba(143, 174, 74, 0.08),
+      transparent 28%
+    );
+
+  mix-blend-mode: screen;
+}
+
+/* ============================================================
+   LIVE DOT
+============================================================ */
+
+.live-dot {
+  position: relative;
+
+  display: inline-block;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #8fae4a;
+
+  box-shadow:
+    0 0 0 4px rgba(143, 174, 74, 0.08),
+    0 0 14px rgba(143, 174, 74, 0.6);
+
+  animation: livePulse 2s infinite;
+}
+
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+
+/* ============================================================
+   BENTO CARDS
+============================================================ */
+
+.bento-card {
+  position: relative;
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20, 20, 15, 0.96),
+      rgba(8, 8, 6, 0.96)
+    );
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.42);
+
+  transition:
+    transform 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.bento-card::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  background:
+    radial-gradient(
+      300px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.10),
+      transparent 65%
+    );
+
+  transition: opacity 300ms ease;
+}
+
+.bento-card:hover {
+  transform: translateY(-4px);
+
+  border-color: rgba(212, 175, 55, 0.25);
+
+  box-shadow:
+    0 35px 90px rgba(0, 0, 0, 0.58),
+    0 0 50px rgba(212, 175, 55, 0.04);
+}
+
+.bento-card:hover::before {
+  opacity: 1;
+}
+
+/* ============================================================
+   GRADIENT / BLOB CARD
+============================================================ */
+
+.blob-card {
+  position: relative;
+  overflow: hidden;
+
+  border-radius: 28px;
+
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      #e8d9a0 0%,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 75% 40%,
+      #8fae4a 0%,
+      transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      #d4af37,
+      #6f5718
+    );
+
+  box-shadow:
+    0 30px 90px rgba(212, 175, 55, 0.14);
+}
+
+.blob-card::after {
+  content: "";
+
+  position: absolute;
+  width: 260px;
+  height: 260px;
+
+  right: -80px;
+  top: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  filter: blur(20px);
+}
+
+/* ============================================================
+   PANEL
+============================================================ */
+
+.panel {
+  border: 1px solid rgba(212, 175, 55, 0.18);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(23, 21, 13, 0.98),
+      rgba(10, 10, 7, 0.98)
+    );
+
+  box-shadow:
+    0 35px 100px rgba(0, 0, 0, 0.55);
+}
+
+/* ============================================================
+   DIVIDER GLOW
+============================================================ */
+
+.divider-glow {
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(212, 175, 55, 0.32),
+      transparent
+    );
+}
+
+/* ============================================================
+   CHART BAR
+============================================================ */
+
+.chart-bar {
+  flex: 1;
+
+  min-width: 3px;
+
+  border-radius: 999px 999px 2px 2px;
+
+  background:
+    linear-gradient(
+      to top,
+      #5a6b28,
+      #b8895a,
+      #e8d9a0
+    );
+
+  opacity: 0.78;
+
+  transition:
+    height 300ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.chart-bar:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   AVATARS
+============================================================ */
+
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-fallback {
+  display: flex;
+
+  width: 36px;
+  height: 36px;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-left: -7px;
+
+  border: 2px solid #050503;
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e8d9a0,
+      #6f5718
+    );
+
+  color: #090906;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.avatar-fallback:first-child {
+  margin-left: 0;
+}
+
+/* ============================================================
+   RIBBON
+============================================================ */
+
+.ribbon {
+  position: absolute;
+
+  right: -42px;
+  top: 20px;
+
+  width: 150px;
+
+  transform: rotate(35deg);
+
+  padding: 6px 0;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      90deg,
+      #6f5718,
+      #d4af37,
+      #6f5718
+    );
+
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+
+  box-shadow:
+    0 8px 25px rgba(212, 175, 55, 0.18);
+}
+
+/* ============================================================
+   GLASS
+============================================================ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.025);
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* ============================================================
+   PREMIUM GOLD BORDER
+============================================================ */
+
+.gold-border {
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+/* ============================================================
+   PREMIUM GOLD BUTTON OVERRIDES
+============================================================ */
+
+/*
+  These classes are useful for buttons written directly
+  with Tailwind utilities.
+*/
+
+.gold-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #685419,
+      #9b7a24,
+      #6c5418
+    );
+
+  color: #ffffff;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 10px 35px rgba(212, 175, 55, 0.15),
+    inset 0 1px rgba(255, 255, 255, 0.12);
+
+  transition: all 180ms ease;
+}
+
+.gold-button:hover {
+  transform: translateY(-2px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #806720,
+      #b18e2f,
+      #80651e
+    );
+
+  border-color: rgba(232, 217, 160, 0.8);
+
+  box-shadow:
+    0 15px 45px rgba(212, 175, 55, 0.22);
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 768px) {
+  .bento-card:hover {
+    transform: none;
+  }
+
+  .blob-card {
+    border-radius: 22px;
+  }
+
+  .btn-primary,
+  .btn-ghost {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>BillSphere Invoice</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f4f4;
+            padding: 30px;
+        }
+
+        .invoice-container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .invoice-title {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .details {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #222;
+            color: white;
+        }
+
+        .total {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #777;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="invoice-container">
+
+
+    <div class="header">
+
+        <div>
+
+            <div class="company-name">
+                BillSphere
+            </div>
+
+            <p>
+                Subscription Billing Platform
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <div class="invoice-title">
+                INVOICE
+            </div>
+
+            <p>
+                Invoice No:
+                {{ invoice.invoice_number }}
+            </p>
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="details">
+
+
+        <p>
+            <strong>Status:</strong>
+            {{ invoice.status }}
+        </p>
+
+
+        <p>
+            <strong>Due Date:</strong>
+            {{ invoice.due_date }}
+        </p>
+
+
+    </div>
+
+
+
+    <table>
+
+        <tr>
+
+            <th>
+                Description
+            </th>
+
+            <th>
+                Amount
+            </th>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                Subscription Billing
+            </td>
+
+            <td>
+                ₹ {{ invoice.amount }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                Tax
+            </td>
+
+            <td>
+                ₹ {{ invoice.tax }}
+            </td>
+
+        </tr>
+
+
+    </table>
+
+
+
+    <div class="total">
+
+        Total:
+        ₹ {{ invoice.total_amount }}
+
+    </div>
+
+
+
+    <div class="footer">
+
+        Thank you for choosing BillSphere ❤️
+
+    </div>
+
+
+
+</div>
+
+
+</body>
+
+</html>

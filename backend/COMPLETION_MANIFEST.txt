@@ -1,0 +1,34 @@
+BillSphere Backend - Completion Manifest
+======================================
+
+This archive contains the cleaned backend source (without .venv, .env,
+runtime logs, or generated PDFs).
+
+Core milestones:
+[done] PostgreSQL models and persistence
+[done] Authentication and authorization
+[done] Customers and plans
+[done] Subscription lifecycle/state machine
+[done] Billing cycle engine
+[done] Celery worker + Celery Beat
+[done] Automatic renewal invoice generation
+[done] Real invoice line items
+[done] Usage billing
+[done] Proration engine
+[done] Mock payment gateway
+[done] Payment webhooks
+[done] Webhook idempotency
+[done] Payment success/failure lifecycle integration
+[done] Day 1 / 3 / 7 payment retry engine
+[done] Refund processing
+[done] Country-configurable tax calculation
+[done] India CGST/SGST/IGST
+[done] PDF invoice generation
+[done] Audit logging
+[done] Analytics / MRR / churn / trial conversion / revenue by plan
+[done] Tax/revenue/subscription reports
+[done] Locust load-test starter
+[done] Integration/unit tests included
+[done] Docker Compose
+[done] Alembic migration
+[done] Safe .env.example
