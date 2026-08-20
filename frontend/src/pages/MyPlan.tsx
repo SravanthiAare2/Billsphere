@@ -16,6 +16,7 @@ import {
   extendSubscription,
   convertTrialToPaid,
 } from "../assets/services/api";
+import { getPlan } from "../services/api";
 
 import { useToast } from "../components/ToastProvider";
 
@@ -81,9 +82,48 @@ function MyPlan() {
 
     try {
       const data = await getMySubscriptions();
+      const subscriptionItems = Array.isArray(data)
+        ? data
+        : data?.items || [];
+      let identity: { subscription_id?: number; plan_id?: number } = {};
+
+      try {
+        identity = JSON.parse(
+          localStorage.getItem("billsphere_last_successful_checkout") || "{}"
+        );
+      } catch {
+        identity = {};
+      }
+
+      const current =
+        subscriptionItems.find(
+          (subscription: Subscription) =>
+            subscription.id === identity.subscription_id &&
+            subscription.plan_id === identity.plan_id &&
+            ["active", "trial", "past_due"].includes(subscription.status)
+        ) ||
+        subscriptionItems
+          .filter((subscription: Subscription) =>
+            ["active", "trial", "past_due"].includes(subscription.status)
+          )
+          .sort((left: Subscription, right: Subscription) => {
+            const leftDate = new Date(left.current_period_start || 0).getTime();
+            const rightDate = new Date(right.current_period_start || 0).getTime();
+            return rightDate - leftDate || right.id - left.id;
+          })[0];
+
+      const plan = current ? await getPlan(current.plan_id) : null;
 
       setSubscriptions(
-        Array.isArray(data) ? data : []
+        subscriptionItems.map((subscription: Subscription) => ({
+          ...subscription,
+          plan_name: plan && subscription.id === current?.id ? plan.name : null,
+          price: plan && subscription.id === current?.id ? plan.price : null,
+          billing_interval:
+            plan && subscription.id === current?.id
+              ? plan.billing_cycle
+              : subscription.billing_interval,
+        }))
       );
     } catch (error: any) {
       notify({

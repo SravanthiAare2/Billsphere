@@ -33,6 +33,9 @@ PUBLIC_ROUTES = {
     "/auth/forgot-password",
     "/auth/reset-password",
 
+    # Payment confirmation links contain their own single-use token.
+    "/api/v1/payments/confirmation",
+
     # Health check
     "/health",
 }

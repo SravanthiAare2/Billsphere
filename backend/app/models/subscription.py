@@ -128,6 +128,7 @@ class Subscription(Base):
 
     usage_records: Mapped[list["UsageRecord"]] = relationship(
         "UsageRecord",
+        back_populates="subscription",
         foreign_keys="UsageRecord.subscription_id",
         cascade="all, delete-orphan",
         passive_deletes=True,

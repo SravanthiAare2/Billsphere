@@ -488,6 +488,55 @@ def send_payment_success_notification(
     return _mark_notification_send_result(db, notification, delivered)
 
 
+def send_payment_confirmation_notification(
+    db: Session,
+    payment_id: int,
+    user_id: int,
+    customer_id: int,
+    customer_name: str,
+    plan_name: str,
+    billing_cycle: str,
+    amount: str,
+    currency: str,
+    invoice_number: str,
+    confirm_url: str,
+    reject_url: str,
+) -> Notification:
+    """Create the pending-payment notification and send its email."""
+
+    notification = create_notification(
+        db=db,
+        user_id=user_id,
+        customer_id=customer_id,
+        title="Payment confirmation required",
+        message=(
+            f"Your {currency} {amount} payment for {plan_name} "
+            "is awaiting confirmation."
+        ),
+        notification_type="payment_confirmation_required",
+    )
+
+    delivered = False
+    try:
+        subject, html = email_templates.payment_confirmation_email(
+            customer_name=customer_name,
+            plan_name=plan_name,
+            billing_cycle=billing_cycle,
+            amount=amount,
+            currency=currency,
+            payment_id=payment_id,
+            invoice_number=invoice_number,
+            confirm_url=confirm_url,
+            reject_url=reject_url,
+        )
+        recipient = db.query(User).filter(User.id == user_id).first()
+        delivered = bool(recipient and send_email(recipient.email, subject, html))
+    except Exception:
+        delivered = False
+
+    return _mark_notification_send_result(db, notification, delivered)
+
+
 # ==========================================================
 # Payment Failed Notification (+ email)
 # ==========================================================

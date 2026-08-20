@@ -31,7 +31,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import TYPE_CHECKING
-
+if TYPE_CHECKING:
+    from app.models.invoice import Invoice
+    from app.models.payment_retry import PaymentRetry
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -49,9 +51,6 @@ from sqlalchemy.orm import (
 
 from app.core.database import Base
 
-
-if TYPE_CHECKING:
-    from app.models.invoice import Invoice
 
 
 # ==========================================================
@@ -137,6 +136,14 @@ class Payment(Base):
         foreign_keys=[invoice_id],
         lazy="selectin",
     )
+
+    payment_retries: Mapped[list["PaymentRetry"]] = relationship(
+    "PaymentRetry",
+    back_populates="payment",
+    cascade="all, delete-orphan",
+    passive_deletes=True,
+    lazy="selectin",
+)
 
     # ======================================================
     # Payment Amount

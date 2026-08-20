@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import "./Plans.css";
+
 import {
   ArrowRight,
   Check,
@@ -32,6 +33,105 @@ import { useToast } from "../components/ToastProvider";
 // ============================================================
 
 const API_URL = "http://127.0.0.1:8000/api/v1";
+
+// ============================================================
+// APPROVED BILLSPHERE PLATFORM CATALOG
+// ============================================================
+//
+// IMPORTANT:
+// The backend may contain many more platforms.
+//
+// BillSphere customer UI intentionally exposes ONLY these
+// 53 approved platforms.
+//
+// We do NOT delete or modify any other backend/database plans.
+// We simply filter the customer-facing platform selector.
+//
+
+const APPROVED_PLATFORMS = [
+  // ----------------------------------------------------------
+  // CLOUD / SOFTWARE / BUSINESS
+  // ----------------------------------------------------------
+
+  "Adobe",
+  "Adobe Creative Cloud",
+  "Amazon Web Services",
+  "Alibaba Cloud",
+  "Apple App Store",
+  "Google Play Store",
+  "Google Cloud",
+  "Microsoft Store",
+  "Salesforce",
+  "HubSpot",
+  "Shopify",
+  "Shopify Plus",
+  "Squarespace Commerce",
+  "Webflow Ecommerce",
+  "WooCommerce",
+
+  // ----------------------------------------------------------
+  // MAJOR MARKETPLACES
+  // ----------------------------------------------------------
+
+  "Amazon",
+  "Amazon Business",
+  "Amazon Marketplace",
+  "AliExpress",
+  "eBay",
+  "Etsy",
+  "Flipkart",
+  "Meesho",
+  "Myntra",
+  "Walmart",
+  "Walmart Marketplace",
+  "Mercado Libre",
+  "Shopee",
+  "Lazada",
+  "Rakuten",
+  "Temu",
+  "Taobao",
+  "Tmall",
+  "Tokopedia",
+
+  // ----------------------------------------------------------
+  // RETAIL / FASHION
+  // ----------------------------------------------------------
+
+  "Nike",
+  "H&M",
+  "ASOS",
+  "SHEIN",
+  "IKEA",
+  "Best Buy",
+  "Costco",
+  "Target",
+  "Macy's",
+
+  // ----------------------------------------------------------
+  // ENTERTAINMENT / GAMING
+  // ----------------------------------------------------------
+
+  "Netflix",
+  "Spotify",
+  "Epic Games Store",
+  "Roblox Marketplace",
+
+  // ----------------------------------------------------------
+  // FOOD / DELIVERY
+  // ----------------------------------------------------------
+
+  "Swiggy",
+  "Uber Eats",
+  "Zomato",
+
+  // ----------------------------------------------------------
+  // SOCIAL COMMERCE
+  // ----------------------------------------------------------
+
+  "Instagram Shop",
+  "Facebook Marketplace",
+  "TikTok Shop",
+] as const;
 
 // ============================================================
 // TYPES
@@ -76,6 +176,14 @@ interface BackendPlan {
   updated_at?: string | null;
 }
 
+interface PlansApiResponse {
+  total?: number;
+  page?: number;
+  page_size?: number;
+  plans?: BackendPlan[];
+  items?: BackendPlan[];
+}
+
 // ============================================================
 // HUMAN READABLE FEATURE LABELS
 // ============================================================
@@ -91,15 +199,24 @@ const FEATURE_LABELS: Record<string, string> = {
   payment_retries: "Payment Retries",
   billing_reports: "Billing Reports",
   analytics: "Analytics",
+  advanced_analytics: "Advanced Analytics",
   proration: "Proration",
   tax_management: "Tax Management",
+  tax_automation: "Tax Automation",
   pdf_invoices: "PDF Invoices",
   priority_support: "Priority Support",
   customer_management: "Customer Management",
   user_management: "User Management",
   reporting: "Reporting",
+  financial_reports: "Financial Reports",
   dashboard_access: "Dashboard Access",
+  basic_dashboard: "Basic Dashboard",
   notifications: "Notifications",
+  failed_payment_recovery: "Failed Payment Recovery",
+  advanced_tax_handling: "Advanced Tax Handling",
+  custom_billing_workflows: "Custom Billing Workflows",
+  enterprise_administration: "Enterprise Administration",
+  high_volume_billing: "High Volume Billing",
 };
 
 // ============================================================
@@ -284,83 +401,76 @@ function normalizeFeatures(
 }
 
 // ============================================================
-// API RESPONSE NORMALIZER
+// NORMALIZE API RESPONSE
 // ============================================================
 
 function normalizePlans(
   data: unknown
 ): BackendPlan[] {
-  // Backend returned an array
   if (Array.isArray(data)) {
     return data as BackendPlan[];
   }
 
-  // Backend returned an object
-  if (
-    data &&
-    typeof data === "object"
-  ) {
-    const response =
-      data as Record<string, unknown>;
-
-    // Paginated response
-    if (
-      Array.isArray(response.items)
-    ) {
-      return response.items as BackendPlan[];
-    }
-
-    // { plans: [...] }
-    if (
-      Array.isArray(response.plans)
-    ) {
-      return response.plans as BackendPlan[];
-    }
-
-    // Single plan object
-    if (
-      typeof response.id === "number"
-    ) {
-      return [
-        response as BackendPlan,
-      ];
-    }
+  if (!data || typeof data !== "object") {
+    return [];
   }
 
-  // Unknown / unsupported response
+  const response =
+    data as PlansApiResponse;
+
+  /*
+   * Current BillSphere backend response:
+   *
+   * {
+   *   total: 783,
+   *   page: 1,
+   *   page_size: 10,
+   *   plans: [...]
+   * }
+   */
+
+  if (Array.isArray(response.plans)) {
+    return response.plans;
+  }
+
+  if (Array.isArray(response.items)) {
+    return response.items;
+  }
+
   return [];
 }
 
 // ============================================================
-// FETCH PLANS
+// FETCH ONE PAGE
 // ============================================================
 
-async function fetchPlans(): Promise<
-  BackendPlan[]
-> {
+async function fetchPlansPage(
+  page: number,
+  pageSize: number
+): Promise<{
+  plans: BackendPlan[];
+  total: number;
+}> {
   const token =
-    localStorage.getItem(
-      "access_token"
-    ) ||
+    localStorage.getItem("access_token") ||
     localStorage.getItem("token");
 
-  const response = await fetch(
-    `${API_URL}/plans/plans`,
-    {
-      method: "GET",
+  const url =
+    `${API_URL}/plans?page=${page}&page_size=${pageSize}`;
 
-      headers: {
-        Accept: "application/json",
+  const response = await fetch(url, {
+    method: "GET",
 
-        ...(token
-          ? {
-              Authorization:
-                `Bearer ${token}`,
-            }
-          : {}),
-      },
-    }
-  );
+    headers: {
+      Accept: "application/json",
+
+      ...(token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {}),
+    },
+  });
 
   if (!response.ok) {
     let message =
@@ -384,7 +494,107 @@ async function fetchPlans(): Promise<
   const data =
     await response.json();
 
-  return normalizePlans(data);
+  const plans =
+    normalizePlans(data);
+
+  return {
+    plans,
+
+    total:
+      typeof data?.total === "number"
+        ? data.total
+        : plans.length,
+  };
+}
+
+// ============================================================
+// FETCH ALL PLANS
+// ============================================================
+
+async function fetchPlans(): Promise<
+  BackendPlan[]
+> {
+  /*
+   * Backend currently supports page_size=10.
+   *
+   * We therefore retrieve every page.
+   *
+   * IMPORTANT:
+   * We still fetch all backend plans because the
+   * approved-platform filtering happens afterward.
+   */
+
+  const PAGE_SIZE = 10;
+
+  const firstPage =
+    await fetchPlansPage(
+      1,
+      PAGE_SIZE
+    );
+
+  const allPlans = [
+    ...firstPage.plans,
+  ];
+
+  const total =
+    firstPage.total;
+
+  if (
+    total <= firstPage.plans.length
+  ) {
+    return allPlans;
+  }
+
+  const totalPages =
+    Math.ceil(
+      total / PAGE_SIZE
+    );
+
+  /*
+   * Fetch remaining pages sequentially.
+   */
+
+  for (
+    let page = 2;
+    page <= totalPages;
+    page++
+  ) {
+    const result =
+      await fetchPlansPage(
+        page,
+        PAGE_SIZE
+      );
+
+    allPlans.push(
+      ...result.plans
+    );
+  }
+
+  /*
+   * Remove accidental duplicate
+   * records by plan ID.
+   */
+
+  const uniquePlans =
+    new Map<
+      number,
+      BackendPlan
+    >();
+
+  allPlans.forEach((plan) => {
+    if (
+      typeof plan.id === "number"
+    ) {
+      uniquePlans.set(
+        plan.id,
+        plan
+      );
+    }
+  });
+
+  return Array.from(
+    uniquePlans.values()
+  );
 }
 
 // ============================================================
@@ -393,7 +603,9 @@ async function fetchPlans(): Promise<
 
 export default function Plans() {
   const navigate = useNavigate();
-  const { notify } = useToast();
+
+  const { notify } =
+    useToast();
 
   const [plans, setPlans] =
     useState<BackendPlan[]>([]);
@@ -405,9 +617,9 @@ export default function Plans() {
     useState("");
 
   const [billingCycle, setBillingCycle] =
-    useState<"monthly" | "yearly">(
-      "monthly"
-    );
+    useState<
+      "monthly" | "yearly"
+    >("monthly");
 
   const [platformOpen, setPlatformOpen] =
     useState(false);
@@ -439,17 +651,12 @@ export default function Plans() {
       setPlans(activePlans);
 
       /*
-       * IMPORTANT:
-       *
-       * Do NOT automatically select
-       * the first platform.
-       *
-       * Initial state remains:
-       *
-       * "Select a platform"
+       * Do not automatically select
+       * a platform.
        */
 
       setPlatform("");
+
       setSelectedPlanId(null);
     } catch (error: any) {
       notify({
@@ -476,12 +683,25 @@ export default function Plans() {
   }, []);
 
   // ==========================================================
-  // BACKEND PLATFORMS
+  // APPROVED BACKEND PLATFORMS
   // ==========================================================
+  //
+  // The backend may return 263 platforms.
+  //
+  // Only platforms present in APPROVED_PLATFORMS
+  // AND present in the backend are displayed.
+  //
+  // This means:
+  //
+  // Database → 263
+  // Customer UI → maximum 53
+  //
+  // No database records are deleted.
+  //
 
   const backendPlatforms =
     useMemo(() => {
-      const unique =
+      const available =
         new Map<
           string,
           string
@@ -498,22 +718,35 @@ export default function Plans() {
         const key =
           value.toLowerCase();
 
-        if (!unique.has(key)) {
-          unique.set(key, value);
+        if (!available.has(key)) {
+          available.set(
+            key,
+            value
+          );
         }
       });
 
-      return Array.from(
-        unique.values()
-      ).sort((a, b) =>
-        a.localeCompare(
-          b,
-          undefined,
-          {
-            sensitivity: "base",
-          }
+      /*
+       * Preserve the exact approved
+       * platform names and order.
+       *
+       * Case-insensitive matching is used
+       * so backend capitalization does not
+       * accidentally hide a valid platform.
+       */
+
+      return APPROVED_PLATFORMS
+        .filter((approvedPlatform) =>
+          available.has(
+            approvedPlatform.toLowerCase()
+          )
         )
-      );
+        .map(
+          (approvedPlatform) =>
+            available.get(
+              approvedPlatform.toLowerCase()
+            ) || approvedPlatform
+        );
     }, [plans]);
 
   // ==========================================================
@@ -577,7 +810,25 @@ export default function Plans() {
             cycle === "both" ||
             cycle === "all";
 
+          /*
+           * Extra safety:
+           *
+           * Even if a platform is manually
+           * selected somehow, only one of the
+           * approved 53 platforms can display
+           * customer plans.
+           */
+
+          const isApproved =
+            APPROVED_PLATFORMS.some(
+              (approvedPlatform) =>
+                approvedPlatform
+                  .toLowerCase() ===
+                planPlatform
+            );
+
           return (
+            isApproved &&
             platformMatches &&
             cycleMatches
           );
@@ -589,28 +840,50 @@ export default function Plans() {
             "premium",
           ];
 
+          const aName =
+            (a.name || "")
+              .trim()
+              .toLowerCase();
+
+          const bName =
+            (b.name || "")
+              .trim()
+              .toLowerCase();
+
           const aIndex =
-            order.indexOf(
-              (a.name || "")
-                .toLowerCase()
-            );
+            order.indexOf(aName);
 
           const bIndex =
-            order.indexOf(
-              (b.name || "")
-                .toLowerCase()
-            );
+            order.indexOf(bName);
 
           if (
             aIndex !== -1 &&
             bIndex !== -1
           ) {
-            return aIndex - bIndex;
+            return (
+              aIndex - bIndex
+            );
+          }
+
+          if (
+            aIndex !== -1
+          ) {
+            return -1;
+          }
+
+          if (
+            bIndex !== -1
+          ) {
+            return 1;
           }
 
           return (
-            Number(a.price ?? 0) -
-            Number(b.price ?? 0)
+            Number(
+              a.price ?? 0
+            ) -
+            Number(
+              b.price ?? 0
+            )
           );
         });
     }, [
@@ -627,8 +900,11 @@ export default function Plans() {
     value: string
   ) {
     setPlatform(value);
+
     setPlatformOpen(false);
+
     setPlatformSearch("");
+
     setSelectedPlanId(null);
   }
 
@@ -640,20 +916,6 @@ export default function Plans() {
     plan: BackendPlan
   ) {
     setSelectedPlanId(plan.id);
-
-    /*
-     * Backend plan ID is passed.
-     *
-     * The next page must fetch the
-     * real plan again from backend.
-     *
-     * Frontend does NOT invent:
-     *
-     * - price
-     * - features
-     * - trial
-     * - billing cycle
-     */
 
     navigate(
       `/customer/plans/${plan.id}`
@@ -668,11 +930,13 @@ export default function Plans() {
     return (
       <div className="plans-page">
         <div className="plans-loading">
+
           <div className="loading-ring" />
 
           <p>
             Loading available plans...
           </p>
+
         </div>
       </div>
     );
@@ -690,11 +954,13 @@ export default function Plans() {
       ==================================================== */}
 
       <div className="plans-top-bar">
+
         <div />
 
         <div className="plans-brand">
           BILLSPHERE
         </div>
+
       </div>
 
       {/* ====================================================
@@ -779,7 +1045,8 @@ export default function Plans() {
             className="platform-select-button"
             onClick={() =>
               setPlatformOpen(
-                (current) => !current
+                (current) =>
+                  !current
               )
             }
           >
@@ -804,6 +1071,8 @@ export default function Plans() {
 
             <div className="platform-dropdown">
 
+              {/* SEARCH */}
+
               <div className="platform-search-box">
 
                 <Search size={15} />
@@ -822,19 +1091,21 @@ export default function Plans() {
                 />
 
                 {platformSearch && (
+
                   <button
                     type="button"
                     onClick={() =>
-                      setPlatformSearch(
-                        ""
-                      )
+                      setPlatformSearch("")
                     }
                   >
                     <X size={14} />
                   </button>
+
                 )}
 
               </div>
+
+              {/* PLATFORM LIST */}
 
               <div className="platform-dropdown-list">
 
@@ -867,6 +1138,7 @@ export default function Plans() {
                         item.toLowerCase();
 
                       return (
+
                         <button
                           type="button"
                           key={item}
@@ -899,6 +1171,7 @@ export default function Plans() {
                           )}
 
                         </button>
+
                       );
                     }
                   )
@@ -907,7 +1180,10 @@ export default function Plans() {
 
               </div>
 
+              {/* FOOTER */}
+
               <div className="platform-dropdown-footer">
+
                 {filteredPlatforms.length}{" "}
                 platform
                 {filteredPlatforms.length ===
@@ -915,6 +1191,7 @@ export default function Plans() {
                   ? ""
                   : "s"}{" "}
                 available
+
               </div>
 
             </div>
@@ -969,6 +1246,8 @@ export default function Plans() {
 
         <section className="platform-plans">
 
+          {/* SELECTED PLATFORM HEADER */}
+
           <div className="selected-platform-header">
 
             <div>
@@ -993,6 +1272,7 @@ export default function Plans() {
               className="change-platform-button"
               onClick={() => {
                 setPlatform("");
+
                 setPlatformOpen(true);
               }}
             >
@@ -1081,6 +1361,7 @@ export default function Plans() {
                 onClick={loadPlans}
               >
                 <RefreshCw size={14} />
+
                 Refresh Plans
               </button>
 
@@ -1089,6 +1370,8 @@ export default function Plans() {
           ) : (
 
             <>
+
+              {/* PLAN CARDS */}
 
               <div className="plans-grid">
 
@@ -1103,16 +1386,23 @@ export default function Plans() {
                         plan.feature_entitlements
                       );
 
+                    const planName =
+                      (plan.name || "")
+                        .trim()
+                        .toLowerCase();
+
+                    /*
+                     * IMPORTANT:
+                     *
+                     * ONLY PREMIUM IS MOST POPULAR.
+                     *
+                     * Standard no longer receives
+                     * the popular badge.
+                     */
+
                     const isPopular =
-                      plan.name
-                        ?.trim()
-                        .toLowerCase() ===
-                        "premium" ||
-                      (
-                        index === 1 &&
-                        displayPlans.length >=
-                          3
-                      );
+                      planName ===
+                      "premium";
 
                     const isSelected =
                       selectedPlanId ===
@@ -1166,7 +1456,10 @@ export default function Plans() {
                         }`}
                       >
 
+                        {/* POPULAR BADGE */}
+
                         {isPopular && (
+
                           <div className="popular-badge">
 
                             <Zap
@@ -1176,6 +1469,7 @@ export default function Plans() {
                             MOST POPULAR
 
                           </div>
+
                         )}
 
                         {/* PLAN HEADER */}
@@ -1183,19 +1477,25 @@ export default function Plans() {
                         <div className="plan-card-header">
 
                           <div className="plan-icon">
+
                             <Package
                               size={17}
                             />
+
                           </div>
 
                           <div className="plan-name">
+
                             {plan.name ||
                               `Plan #${plan.id}`}
+
                           </div>
 
                           <p>
+
                             {plan.description ||
                               `A ${platform} subscription plan powered by BillSphere.`}
+
                           </p>
 
                         </div>
@@ -1205,15 +1505,19 @@ export default function Plans() {
                         <div className="plan-price">
 
                           <span className="price">
+
                             {money(
                               plan.price,
                               plan.currency ||
                                 "INR"
                             )}
+
                           </span>
 
                           <span className="billing">
+
                             / {interval}
+
                           </span>
 
                         </div>
@@ -1281,9 +1585,11 @@ export default function Plans() {
                             <div className="feature">
 
                               <span className="check">
+
                                 <Check
                                   size={10}
                                 />
+
                               </span>
 
                               <span>
@@ -1296,7 +1602,7 @@ export default function Plans() {
 
                           )}
 
-                          {/* LIMITS */}
+                          {/* CUSTOMER LIMIT */}
 
                           {customerLimit !==
                             null && (
@@ -1315,6 +1621,8 @@ export default function Plans() {
 
                           )}
 
+                          {/* INVOICE LIMIT */}
+
                           {invoiceLimit !==
                             null && (
 
@@ -1332,6 +1640,8 @@ export default function Plans() {
 
                           )}
 
+                          {/* USER LIMIT */}
+
                           {userLimit !==
                             null && (
 
@@ -1348,6 +1658,8 @@ export default function Plans() {
                             />
 
                           )}
+
+                          {/* SUBSCRIPTION LIMIT */}
 
                           {subscriptionLimit !==
                             null && (
@@ -1388,23 +1700,35 @@ export default function Plans() {
                         >
 
                           {isSelected ? (
+
                             <>
+
                               <Loader2
                                 size={15}
                                 className="spin-icon"
                               />
+
                               Opening...
+
                             </>
+
                           ) : (
+
                             <>
+
                               Choose Plan
+
                               <ArrowRight
                                 size={15}
                               />
+
                             </>
+
                           )}
 
                         </button>
+
+                        {/* REVIEW NOTE */}
 
                         <div className="review-note">
 

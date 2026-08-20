@@ -27,6 +27,7 @@ Used for:
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     DateTime,
@@ -36,9 +37,13 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+
+if TYPE_CHECKING:
+    from app.models.payment import Payment
 
 
 # ==========================================================
@@ -51,6 +56,16 @@ RETRY_PROCESSING = "processing"
 RETRY_COMPLETED = "completed"
 RETRY_FAILED = "failed"
 RETRY_CANCELLED = "cancelled"
+
+
+RETRY_STATUSES = {
+    RETRY_PENDING,
+    RETRY_SCHEDULED,
+    RETRY_PROCESSING,
+    RETRY_COMPLETED,
+    RETRY_FAILED,
+    RETRY_CANCELLED,
+}
 
 
 # ==========================================================
@@ -131,6 +146,16 @@ class PaymentRetry(Base):
     )
 
     # ======================================================
+    # Payment Relationship
+    # ======================================================
+
+    payment: Mapped["Payment"] = relationship(
+        "Payment",
+        back_populates="payment_retries",
+        foreign_keys=[payment_id],
+    )
+
+    # ======================================================
     # Retry Information
     # ======================================================
 
@@ -160,15 +185,6 @@ class PaymentRetry(Base):
         nullable=False,
         index=True,
     )
-
-    # Supported statuses:
-    #
-    # pending
-    # scheduled
-    # processing
-    # completed
-    # failed
-    # cancelled
 
     # ======================================================
     # Error Information

@@ -723,21 +723,29 @@ def get_existing_renewal_invoice(
     if invoice:
         return invoice
 
+    # Fallback only to an invoice created for the same billing
+    # period.  Do not reuse an arbitrary old pending/failed invoice
+    # belonging to the same subscription: that can attach an invoice
+    # from a previous cycle to the current cycle.
+    cycle_start = _as_utc(billing_cycle.cycle_start)
+    cycle_end = _as_utc(billing_cycle.cycle_end)
+
+    if cycle_start is None or cycle_end is None:
+        return None
+
     invoice = (
         db.query(Invoice)
         .filter(
-            Invoice.subscription_id
-            == subscription_id,
+            Invoice.subscription_id == subscription_id,
             Invoice.status.in_(
                 [
                     INVOICE_PENDING_STATUS,
                     INVOICE_FAILED_STATUS,
                 ]
             ),
+            Invoice.created_at >= cycle_end,
         )
-        .order_by(
-            Invoice.id.desc()
-        )
+        .order_by(Invoice.id.desc())
         .first()
     )
 

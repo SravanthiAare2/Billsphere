@@ -85,9 +85,10 @@ class UsageRecord(Base):
     )
 
     subscription: Mapped["Subscription"] = relationship(
-        "Subscription",
-        foreign_keys=[subscription_id],
-    )
+    "Subscription",
+    back_populates="usage_records",
+    foreign_keys=[subscription_id],
+)
 
     # ==========================================================
     # Usage Details

@@ -115,6 +115,10 @@ class Settings(BaseSettings):
         default=30,
     )
 
+    PAYMENT_CONFIRMATION_EXPIRE_MINUTES: int = Field(
+        default=30,
+    )
+
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(
         default=7,
     )

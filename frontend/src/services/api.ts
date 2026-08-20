@@ -104,6 +104,38 @@ export interface SubscriptionCreate {
   end_date?: string;
 }
 
+export interface CheckoutResult {
+  checkout_status: string;
+  payment_id: number;
+  payment_status: string;
+  invoice_id: number;
+  invoice_status: string;
+  subscription_id: number;
+  subscription_status: string;
+  plan_id: number;
+  amount: number | string;
+  currency: string;
+  confirmation_expires_at?: string | null;
+  confirmation_url?: string | null;
+  mock_mode: boolean;
+}
+
+export interface PaymentConfirmationResult {
+  result: string;
+  payment_id: number;
+  payment_status: string;
+  invoice_id: number;
+  invoice_status: string;
+  subscription_id: number;
+  subscription_status: string;
+  plan_id: number;
+  plan_name: string;
+  amount: number | string;
+  currency: string;
+  billing_cycle: string;
+  next_billing_date?: string | null;
+}
+
 export interface CurrentUser {
   id?: number;
   email?: string;
@@ -704,6 +736,119 @@ export async function deletePlan(
 // SUBSCRIPTIONS
 // ============================================================
 
+export async function getMySubscriptions(): Promise<Subscription[]> {
+  const response = await fetch(
+    `${API_URL}/subscriptions/me`,
+    {
+      method: "GET",
+      headers: authHeaders(),
+    }
+  );
+  const result = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result, "Failed to load subscriptions"));
+  }
+
+  return Array.isArray(result) ? result : result?.items || [];
+}
+
+export async function createMockCheckout(
+  planId: number,
+  paymentMethod: "mock_success" | "mock_failure" = "mock_success"
+): Promise<CheckoutResult> {
+  const response = await fetch(
+    `${API_URL}/payments/checkout`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        plan_id: planId,
+        payment_method: paymentMethod,
+      }),
+    }
+  );
+  const result = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result, "Checkout failed"));
+  }
+
+  return result;
+}
+
+export async function getPaymentConfirmation(
+  token: string
+): Promise<PaymentConfirmationResult> {
+  const response = await fetch(
+    `${API_URL}/payments/confirmation?token=${encodeURIComponent(token)}`
+  );
+  const result = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result, "Confirmation link is invalid or expired"));
+  }
+
+  return result;
+}
+
+export async function submitPaymentConfirmation(
+  token: string,
+  decision: "confirm" | "reject"
+): Promise<PaymentConfirmationResult> {
+  const response = await fetch(
+    `${API_URL}/payments/confirmation`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, decision }),
+    }
+  );
+  const result = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result, "Payment confirmation failed"));
+  }
+
+  return result;
+}
+
+export async function getMyInvoices(): Promise<any[]> {
+  const response = await fetch(
+    `${API_URL}/invoices?page=1&page_size=100`,
+    {
+      method: "GET",
+      headers: authHeaders(),
+    }
+  );
+  const result = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result, "Failed to load invoices"));
+  }
+
+  return Array.isArray(result) ? result : result?.items || [];
+}
+
+export async function getMyPayments(): Promise<any[]> {
+  const response = await fetch(
+    `${API_URL}/payments?page=1&page_size=100`,
+    {
+      method: "GET",
+      headers: authHeaders(),
+    }
+  );
+  const result = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result, "Failed to load payments"));
+  }
+
+  return Array.isArray(result) ? result : result?.items || [];
+}
+
 // GET /api/v1/subscriptions
 export async function getSubscriptions(): Promise<
   Subscription[]
@@ -874,6 +1019,36 @@ export async function cancelSubscription(
     );
   }
 
+  return result;
+}
+
+export async function extendSubscription(subscriptionId: number) {
+  const response = await fetch(
+    `${API_URL}/subscriptions/${subscriptionId}/extend`,
+    { method: "POST", headers: authHeaders() }
+  );
+  const result = await parseResponse(response);
+  if (!response.ok) throw new Error(getErrorMessage(result, "Failed to extend subscription"));
+  return result;
+}
+
+export async function renewSubscription(subscriptionId: number) {
+  const response = await fetch(
+    `${API_URL}/subscriptions/${subscriptionId}/renew`,
+    { method: "POST", headers: authHeaders() }
+  );
+  const result = await parseResponse(response);
+  if (!response.ok) throw new Error(getErrorMessage(result, "Failed to renew subscription"));
+  return result;
+}
+
+export async function convertTrialToPaid(subscriptionId: number) {
+  const response = await fetch(
+    `${API_URL}/subscriptions/${subscriptionId}/convert-trial`,
+    { method: "POST", headers: authHeaders() }
+  );
+  const result = await parseResponse(response);
+  if (!response.ok) throw new Error(getErrorMessage(result, "Failed to convert trial"));
   return result;
 }
 

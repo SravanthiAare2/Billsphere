@@ -3,19 +3,31 @@ BillSphere Plan Model
 
 SQLAlchemy database model for subscription plans.
 
-Each plan belongs to a specific platform.
+Each plan belongs to a specific platform and billing cycle.
 
 Example:
 
 Amazon
     ├── Basic
+    │   ├── Monthly
+    │   └── Yearly
     ├── Standard
+    │   ├── Monthly
+    │   └── Yearly
     └── Premium
+        ├── Monthly
+        └── Yearly
 
 Netflix
     ├── Basic
+    │   ├── Monthly
+    │   └── Yearly
     ├── Standard
+    │   ├── Monthly
+    │   └── Yearly
     └── Premium
+        ├── Monthly
+        └── Yearly
 """
 
 from __future__ import annotations
@@ -52,36 +64,41 @@ class Plan(Base):
     """
     Subscription plan database model.
 
-    A platform can have multiple plans, but the same
-    plan name cannot be duplicated within the same platform.
+    A platform can have multiple plans.
 
-    Example:
+    The same plan name may exist once per billing cycle.
 
-        Amazon + Basic       -> allowed
-        Amazon + Standard    -> allowed
-        Amazon + Premium     -> allowed
+    Examples:
 
-        Netflix + Basic      -> allowed
+        Amazon + Basic + monthly  -> allowed
+        Amazon + Basic + yearly   -> allowed
 
-        Amazon + Basic       -> duplicate, not allowed
+        Amazon + Standard + monthly -> allowed
+        Amazon + Standard + yearly  -> allowed
+
+        Amazon + Premium + monthly -> allowed
+        Amazon + Premium + yearly  -> allowed
+
+        Amazon + Basic + monthly -> duplicate, not allowed
     """
 
     __tablename__ = "plans"
 
     # ==========================================================
-    # Table Constraints
+    # TABLE CONSTRAINTS
     # ==========================================================
 
     __table_args__ = (
         UniqueConstraint(
             "platform",
             "name",
-            name="uq_plans_platform_name",
+            "billing_cycle",
+            name="uq_plans_platform_name_billing_cycle",
         ),
     )
 
     # ==========================================================
-    # Primary Key
+    # PRIMARY KEY
     # ==========================================================
 
     id: Mapped[int] = mapped_column(
@@ -91,7 +108,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Platform
+    # PLATFORM
     # ==========================================================
 
     platform: Mapped[str] = mapped_column(
@@ -101,7 +118,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Plan Information
+    # PLAN INFORMATION
     # ==========================================================
 
     name: Mapped[str] = mapped_column(
@@ -116,7 +133,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Pricing
+    # PRICING
     # ==========================================================
 
     price: Mapped[Decimal] = mapped_column(
@@ -132,7 +149,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Billing
+    # BILLING
     # ==========================================================
 
     billing_cycle: Mapped[str] = mapped_column(
@@ -151,19 +168,17 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Features
+    # FEATURES
     # ==========================================================
 
-    feature_entitlements: Mapped[
-        dict[str, Any] | None
-    ] = mapped_column(
+    feature_entitlements: Mapped[dict[str, Any] | None] = mapped_column(
         JSON,
         nullable=True,
         default=dict,
     )
 
     # ==========================================================
-    # Usage Limits
+    # USAGE LIMITS
     # ==========================================================
 
     max_customers: Mapped[int | None] = mapped_column(
@@ -177,7 +192,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Status
+    # STATUS
     # ==========================================================
 
     is_active: Mapped[bool] = mapped_column(
@@ -189,7 +204,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Ownership
+    # OWNERSHIP
     # ==========================================================
 
     created_by: Mapped[int | None] = mapped_column(
@@ -202,7 +217,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Timestamps
+    # TIMESTAMPS
     # ==========================================================
 
     created_at: Mapped[datetime] = mapped_column(
@@ -219,7 +234,7 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Relationships
+    # RELATIONSHIPS
     # ==========================================================
 
     created_by_user = relationship(
@@ -234,21 +249,19 @@ class Plan(Base):
     )
 
     # ==========================================================
-    # Helper Methods
+    # HELPER METHODS
     # ==========================================================
 
     def is_available(self) -> bool:
         """
-        Return True when the plan is available for new
-        subscriptions.
+        Return True when the plan is available
+        for new subscriptions.
         """
 
         return self.is_active
 
     def activate(self) -> None:
-        """
-        Activate the plan.
-        """
+        """Activate the plan."""
 
         self.is_active = True
 
@@ -257,14 +270,14 @@ class Plan(Base):
         Deactivate the plan.
 
         Existing subscriptions are not modified.
-        The plan simply becomes unavailable for new
-        subscriptions.
+        The plan simply becomes unavailable for
+        new subscriptions.
         """
 
         self.is_active = False
 
     # ==========================================================
-    # Representation
+    # REPRESENTATION
     # ==========================================================
 
     def __repr__(self) -> str:

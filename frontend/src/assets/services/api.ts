@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://127.0.0.1:8000/api/v1";
 
 // ---- Register ----
 // Your backend expects JSON: { email, password, role }
@@ -76,7 +76,8 @@ export async function getMySubscriptions() {
     headers: authHeaders(),
   });
   if (!response.ok) throw new Error("Failed to load subscriptions");
-  return response.json();
+  const result = await response.json();
+  return Array.isArray(result) ? result : result?.items || [];
 }
 
 // ---- Current user (used to decide which dashboard to show) ----

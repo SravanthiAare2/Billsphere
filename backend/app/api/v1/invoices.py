@@ -78,6 +78,7 @@ def create(
     return create_invoice(
         db,
         invoice_data,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -111,6 +112,7 @@ def list_all(
         db,
         page,
         page_size,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -134,6 +136,7 @@ def get(
     invoice = get_invoice_by_id(
         db,
         invoice_id,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -166,7 +169,11 @@ def get_line_items(
     Get itemized line items for an invoice.
     """
 
-    invoice = get_invoice_by_id(db, invoice_id)
+    invoice = get_invoice_by_id(
+        db,
+        invoice_id,
+        owner_id=int(current_user["sub"]),
+    )
 
     if not invoice:
         raise HTTPException(
@@ -193,6 +200,14 @@ def download_pdf(
     """
     Generate and download the invoice as a PDF.
     """
+
+    invoice = get_invoice_by_id(
+        db,
+        invoice_id,
+        owner_id=int(current_user["sub"]),
+    )
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
 
     file_path = generate_invoice_pdf_file(db, invoice_id)
 
@@ -226,6 +241,7 @@ def update(
         db,
         invoice_id,
         invoice_data,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -249,6 +265,7 @@ def delete(
     delete_invoice(
         db,
         invoice_id,
+        owner_id=int(current_user["sub"]),
     )
 
     return None

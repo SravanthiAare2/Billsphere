@@ -79,8 +79,20 @@ def verify_password(
 # Create Access Token
 # ==========================================================
 
+def _token_subject(user_id: int | str | dict) -> str:
+    """Return the scalar user ID used in JWT ``sub`` claims."""
+
+    if isinstance(user_id, dict):
+        user_id = user_id.get("sub")
+
+    if user_id is None or isinstance(user_id, (dict, list, tuple, set)):
+        raise ValueError("A scalar user ID is required for the token subject")
+
+    return str(user_id)
+
+
 def create_access_token(
-    user_id: int,
+    user_id: int | str | dict,
 ) -> str:
     """
     Generate JWT access token.
@@ -95,7 +107,7 @@ def create_access_token(
     )
 
     payload = {
-        "sub": str(user_id),
+        "sub": _token_subject(user_id),
         "type": "access",
         "exp": expire,
     }
@@ -113,7 +125,7 @@ def create_access_token(
 # ==========================================================
 
 def create_refresh_token(
-    user_id: int,
+    user_id: int | str | dict,
 ) -> str:
     """
     Generate JWT refresh token.
@@ -128,7 +140,7 @@ def create_refresh_token(
     )
 
     payload = {
-        "sub": str(user_id),
+        "sub": _token_subject(user_id),
         "type": "refresh",
         "exp": expire,
     }

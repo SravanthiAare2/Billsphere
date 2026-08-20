@@ -23,6 +23,9 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+import hashlib
+import secrets
+from urllib.parse import quote
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -30,16 +33,31 @@ from sqlalchemy.orm import Session
 from app.core.logging import app_logger
 
 from app.models.audit_log import AuditLog
+from app.models.customer import Customer
 from app.models.invoice import Invoice
 from app.models.invoice_line_item import InvoiceLineItem
 from app.models.payment import Payment
+from app.models.payment_confirmation import PaymentConfirmation
 from app.models.payment_retry import PaymentRetry
+from app.models.plan import Plan
 from app.models.subscription import Subscription
+from app.models.user import User
 
 from app.schemas.payment import (
+    CheckoutRequest,
     PaymentCreate,
     PaymentUpdate,
 )
+from app.schemas.invoice import InvoiceCreate
+from app.schemas.subscription import SubscriptionCreate
+from app.services.invoice_service import create_invoice
+from app.services.subscription_service import create_subscription
+from app.services.notification_service import (
+    send_payment_confirmation_notification,
+    send_payment_failed_notification,
+    send_payment_success_notification,
+)
+from app.core.config import settings
 
 from app.services.subscription_state_machine import (
     SubscriptionLifecycleException,
@@ -209,18 +227,23 @@ def _audit(
 def get_payment_by_id(
     db: Session,
     payment_id: int,
+    owner_id: int | None = None,
 ) -> Payment | None:
     """
     Return payment by ID.
     """
 
-    return (
+    query = (
         db.query(Payment)
-        .filter(
-            Payment.id == payment_id
-        )
-        .first()
+        .join(Invoice, Invoice.id == Payment.invoice_id)
+        .join(Customer, Customer.id == Invoice.customer_id)
+        .filter(Payment.id == payment_id)
     )
+
+    if owner_id is not None:
+        query = query.filter(Customer.owner_id == owner_id)
+
+    return query.first()
 
 
 # ==========================================================
@@ -231,6 +254,8 @@ def get_payment_by_id(
 def create_payment(
     db: Session,
     payment_data: PaymentCreate,
+    commit: bool = True,
+    owner_id: int | None = None,
 ) -> Payment:
     """
     Create a payment record.
@@ -255,6 +280,19 @@ def create_payment(
             status_code=404,
             detail="Invoice not found.",
         )
+
+    if owner_id is not None:
+        owned_invoice = (
+            db.query(Invoice)
+            .join(Customer, Customer.id == Invoice.customer_id)
+            .filter(
+                Invoice.id == invoice.id,
+                Customer.owner_id == owner_id,
+            )
+            .first()
+        )
+        if not owned_invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found.")
 
     invoice_status = str(
         invoice.status or ""
@@ -332,10 +370,323 @@ def create_payment(
         payment.id,
     )
 
-    db.commit()
-    db.refresh(payment)
+    if commit:
+        db.commit()
+        db.refresh(payment)
 
     return payment
+
+
+def checkout(
+    db: Session,
+    checkout_data: CheckoutRequest,
+    owner_id: int,
+) -> dict:
+    """Run the complete explicit mock checkout lifecycle."""
+
+    customer = (
+        db.query(Customer)
+        .filter(
+            Customer.owner_id == owner_id,
+            Customer.is_active.is_(True),
+        )
+        .order_by(Customer.id.asc())
+        .first()
+    )
+    if not customer:
+        user = db.query(User).filter(User.id == owner_id).first()
+        if not user or not user.is_active:
+            raise HTTPException(status_code=404, detail="Customer not found.")
+
+        customer = Customer(
+            owner_id=user.id,
+            company_name=(
+                f"{user.first_name} {user.last_name}".strip()
+                or user.email
+            ),
+            contact_name=(
+                f"{user.first_name} {user.last_name}".strip()
+                or user.email
+            ),
+            email=user.email,
+            phone=user.phone,
+            country="IN",
+            is_active=True,
+        )
+        db.add(customer)
+        db.flush()
+
+    plan = (
+        db.query(Plan)
+        .filter(
+            Plan.id == checkout_data.plan_id,
+            Plan.is_active.is_(True),
+        )
+        .first()
+    )
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found.")
+
+    existing = (
+        db.query(Subscription)
+        .filter(
+            Subscription.customer_id == customer.id,
+            Subscription.plan_id == plan.id,
+            Subscription.status.in_(("trial", "active", "paused", "past_due")),
+        )
+        .order_by(Subscription.id.desc())
+        .first()
+    )
+    if existing:
+        invoice = (
+            db.query(Invoice)
+            .filter(Invoice.subscription_id == existing.id)
+            .order_by(Invoice.id.desc())
+            .first()
+        )
+        payment = (
+            db.query(Payment)
+            .filter(
+                Payment.invoice_id == invoice.id
+                if invoice
+                else Payment.id == -1,
+            )
+            .order_by(Payment.id.desc())
+            .first()
+        )
+        if payment and payment.status == PAYMENT_COMPLETED and invoice:
+            return _checkout_result(
+                payment,
+                invoice,
+                existing,
+                "already_completed",
+                confirmation_url=None,
+            )
+        raise HTTPException(
+            status_code=409,
+            detail="A checkout already exists for this customer and plan.",
+        )
+
+    try:
+        subscription = create_subscription(
+            db,
+            SubscriptionCreate(
+                customer_id=customer.id,
+                plan_id=plan.id,
+                billing_cycle=plan.billing_cycle,
+                status="trial",
+                start_date=_now(),
+            ),
+            created_by=owner_id,
+            commit=False,
+        )
+        invoice = create_invoice(
+            db,
+            InvoiceCreate(
+                customer_id=customer.id,
+                subscription_id=subscription.id,
+                amount=_money(plan.price),
+                total_amount=_money(plan.price),
+                status=INVOICE_PENDING,
+            ),
+            owner_id=owner_id,
+            commit=False,
+        )
+        payment = create_payment(
+            db,
+            PaymentCreate(
+                invoice_id=invoice.id,
+                amount=_money(invoice.total_amount),
+                payment_method=checkout_data.payment_method,
+                status=PAYMENT_PENDING,
+            ),
+            commit=False,
+        )
+        raw_token = secrets.token_urlsafe(48)
+        expires_at = _now() + timedelta(
+            minutes=settings.PAYMENT_CONFIRMATION_EXPIRE_MINUTES
+        )
+        db.add(
+            PaymentConfirmation(
+                payment_id=payment.id,
+                token_hash=_confirmation_token_hash(raw_token),
+                expires_at=expires_at,
+            )
+        )
+        db.commit()
+        db.refresh(payment)
+        db.refresh(invoice)
+        db.refresh(subscription)
+
+        confirm_url = (
+            f"{settings.FRONTEND_URL}/payment-confirmation?token="
+            f"{quote(raw_token)}&decision=confirm"
+        )
+        reject_url = (
+            f"{settings.FRONTEND_URL}/payment-confirmation?token="
+            f"{quote(raw_token)}&decision=reject"
+        )
+        send_payment_confirmation_notification(
+            db=db,
+            payment_id=payment.id,
+            user_id=owner_id,
+            customer_id=customer.id,
+            customer_name=customer.contact_name,
+            plan_name=plan.name,
+            billing_cycle=plan.billing_cycle,
+            amount=str(payment.amount),
+            currency=plan.currency or "INR",
+            invoice_number=invoice.invoice_number,
+            confirm_url=confirm_url,
+            reject_url=reject_url,
+        )
+        return _checkout_result(
+            payment,
+            invoice,
+            subscription,
+            "confirmation_required",
+            confirmation_expires_at=expires_at,
+            confirmation_url=confirm_url,
+        )
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Checkout failed.") from exc
+
+
+def _checkout_result(
+    payment: Payment,
+    invoice: Invoice,
+    subscription: Subscription,
+    checkout_status: str,
+    confirmation_expires_at: datetime | None = None,
+    confirmation_url: str | None = None,
+) -> dict:
+    return {
+        "checkout_status": checkout_status,
+        "payment_id": payment.id,
+        "payment_status": payment.status,
+        "invoice_id": invoice.id,
+        "invoice_status": invoice.status,
+        "subscription_id": subscription.id,
+        "subscription_status": subscription.status,
+        "plan_id": subscription.plan_id,
+        "amount": payment.amount,
+        "currency": subscription.plan.currency if subscription.plan else "INR",
+        "confirmation_expires_at": confirmation_expires_at,
+        "confirmation_url": confirmation_url,
+        "mock_mode": True,
+    }
+
+
+def _confirmation_token_hash(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _confirmation_context(
+    db: Session,
+    raw_token: str,
+) -> tuple[PaymentConfirmation, Payment, Invoice, Subscription, Plan]:
+    confirmation = (
+        db.query(PaymentConfirmation)
+        .filter(PaymentConfirmation.token_hash == _confirmation_token_hash(raw_token))
+        .with_for_update()
+        .first()
+    )
+    if not confirmation:
+        raise HTTPException(status_code=404, detail="Confirmation token is invalid.")
+    if confirmation.used_at is not None:
+        raise HTTPException(status_code=409, detail="Confirmation token has already been used.")
+    if _as_utc(confirmation.expires_at) < _now():
+        raise HTTPException(status_code=410, detail="Confirmation token has expired.")
+
+    payment = get_payment_by_id(db, confirmation.payment_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found.")
+    if payment.status != PAYMENT_PENDING:
+        raise HTTPException(status_code=409, detail="Payment is no longer pending.")
+    invoice = _get_invoice_for_payment(db, payment)
+    subscription = _get_subscription_for_invoice(db, invoice)
+    if not subscription:
+        raise HTTPException(status_code=409, detail="Payment subscription is missing.")
+    plan = db.query(Plan).filter(Plan.id == subscription.plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail="Subscription plan not found.")
+    return confirmation, payment, invoice, subscription, plan
+
+
+def get_payment_confirmation(db: Session, raw_token: str) -> dict:
+    _, payment, invoice, subscription, plan = _confirmation_context(db, raw_token)
+    return _confirmation_result(
+        payment,
+        invoice,
+        subscription,
+        plan,
+        "pending",
+    )
+
+
+def confirm_payment_from_token(
+    db: Session,
+    raw_token: str,
+    decision: str,
+) -> dict:
+    confirmation, payment, invoice, subscription, plan = _confirmation_context(
+        db, raw_token
+    )
+    confirmation.used_at = _now()
+    confirmation.decision = decision
+
+    if decision == "confirm":
+        payment = mark_payment_success(db, payment.id, f"confirmed_{payment.id}")
+        result = "confirmed"
+        send_payment_success_notification(
+            db,
+            payment.id,
+            user_id=subscription.customer.owner_id,
+            customer_id=subscription.customer_id,
+            amount=str(payment.amount),
+        )
+    else:
+        payment = mark_payment_failed(db, payment.id)
+        result = "rejected"
+        send_payment_failed_notification(
+            db,
+            payment.id,
+            user_id=subscription.customer.owner_id,
+            customer_id=subscription.customer_id,
+            reason="Payment rejected by customer.",
+        )
+
+    db.refresh(invoice)
+    db.refresh(subscription)
+    return _confirmation_result(payment, invoice, subscription, plan, result)
+
+
+def _confirmation_result(
+    payment: Payment,
+    invoice: Invoice,
+    subscription: Subscription,
+    plan: Plan,
+    result: str,
+) -> dict:
+    return {
+        "result": result,
+        "payment_id": payment.id,
+        "payment_status": payment.status,
+        "invoice_id": invoice.id,
+        "invoice_status": invoice.status,
+        "subscription_id": subscription.id,
+        "subscription_status": subscription.status,
+        "plan_id": plan.id,
+        "plan_name": plan.name,
+        "amount": payment.amount,
+        "currency": plan.currency or "INR",
+        "billing_cycle": subscription.billing_cycle,
+        "next_billing_date": subscription.next_billing_date,
+    }
 
 
 # ==========================================================
@@ -347,6 +698,7 @@ def list_payments(
     db: Session,
     page: int = 1,
     page_size: int = 10,
+    owner_id: int | None = None,
 ) -> dict:
     """
     Return paginated payments.
@@ -362,7 +714,14 @@ def list_payments(
             detail="Invalid pagination values.",
         )
 
-    query = db.query(Payment)
+    query = (
+        db.query(Payment)
+        .join(Invoice, Invoice.id == Payment.invoice_id)
+        .join(Customer, Customer.id == Invoice.customer_id)
+    )
+
+    if owner_id is not None:
+        query = query.filter(Customer.owner_id == owner_id)
 
     total = query.count()
 
@@ -395,6 +754,7 @@ def update_payment(
     db: Session,
     payment_id: int,
     payment_data: PaymentUpdate,
+    owner_id: int | None = None,
 ) -> Payment:
     """
     Generic payment update.
@@ -406,6 +766,7 @@ def update_payment(
     payment = get_payment_by_id(
         db,
         payment_id,
+        owner_id=owner_id,
     )
 
     if not payment:
@@ -656,6 +1017,7 @@ def mark_payment_success(
     db: Session,
     payment_id: int,
     transaction_id: str,
+    owner_id: int | None = None,
 ) -> Payment:
     """
     Mark payment successful.
@@ -686,6 +1048,7 @@ def mark_payment_success(
     payment = get_payment_by_id(
         db,
         payment_id,
+        owner_id=owner_id,
     )
 
     if not payment:
@@ -899,6 +1262,7 @@ def mark_payment_success(
 def mark_payment_failed(
     db: Session,
     payment_id: int,
+    owner_id: int | None = None,
 ) -> Payment:
     """
     Mark payment failed.
@@ -923,6 +1287,7 @@ def mark_payment_failed(
     payment = get_payment_by_id(
         db,
         payment_id,
+        owner_id=owner_id,
     )
 
     if not payment:
@@ -1306,6 +1671,8 @@ def refund_payment(
     payment_id: int,
     amount: Decimal | None = None,
     reason: str | None = None,
+    owner_id: int | None = None,
+    commit: bool = True,
 ) -> Payment:
     """
     Refund a completed payment fully or partially.
@@ -1323,6 +1690,7 @@ def refund_payment(
     payment = get_payment_by_id(
         db,
         payment_id,
+        owner_id=owner_id,
     )
 
     if not payment:
@@ -1482,8 +1850,11 @@ def refund_payment(
             payment.id,
         )
 
-        db.commit()
-        db.refresh(payment)
+        db.flush()
+
+        if commit:
+            db.commit()
+            db.refresh(payment)
 
         return payment
 

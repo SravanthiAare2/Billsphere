@@ -11,6 +11,8 @@ import { useEffect } from "react";
 // PAGES
 // ======================================================
 
+import Usage from "./pages/Usage";
+import ConfirmSubscription from "./pages/ConfirmSubscription";
 import DemoDashboard from "./pages/DemoDashboard";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -18,17 +20,21 @@ import Register from "./pages/Register";
 import PlanDetails from "./pages/PlanDetails";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
-
+import Payment from "./pages/Payment";
+import PaymentConfirmation from "./pages/PaymentConfirmation";
 import Customers from "./pages/Customers";
 import Invoices from "./pages/Invoices";
 import Plans from "./pages/Plans";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
-
+import PaymentHistory from "./pages/PaymentHistory";
 import MyPlan from "./pages/MyPlan";
-
+import Billing from "./pages/Billing";
 import ForgotPassword from "./pages/ForgotPassword";
 import SetPassword from "./pages/SetPassword";
+import Notifications from "./pages/Notifications";
+import HelpSupport from "./pages/HelpSupport";
+import AdminSupport from "./pages/AdminSupport";
 
 // ======================================================
 // LAYOUTS
@@ -114,7 +120,7 @@ function AppContent() {
       />
 
       {/* ==================================================
-          CUSTOMER DASHBOARD
+          CUSTOMER DASHBOARD HOME
           
           UserDashboard contains its own:
           - Navbar
@@ -129,46 +135,163 @@ function AppContent() {
 
       {/* ==================================================
           CUSTOMER AREA
-          
+
           CustomerLayout provides:
           - Customer navbar
           - Customer sidebar
           - Main content area
-          
-          Customer pages:
-          - My Plan
-          - Plans
       ================================================== */}
 
       <Route element={<CustomerLayout />}>
 
-        {/* -------------------------------
+        {/* ==================================================
             CUSTOMER MY PLAN
-        -------------------------------- */}
+        ================================================== */}
 
         <Route
           path="/customer/subscriptions"
           element={<MyPlan />}
         />
 
-        {/* -------------------------------
+        {/* ==================================================
             CUSTOMER PLANS
-        -------------------------------- */}
+        ================================================== */}
 
         <Route
           path="/customer/plans"
           element={<Plans />}
         />
 
+        {/* ==================================================
+            CUSTOMER PLAN DETAILS
+        ================================================== */}
+
         <Route
-    path="/customer/plans/:planId"
-    element={<PlanDetails />}
-  />
+          path="/customer/plans/:planId"
+          element={<PlanDetails />}
+        />
+
+        {/* ==================================================
+            CONFIRM SUBSCRIPTION
+        ================================================== */}
+
+        <Route
+          path="/customer/plans/:planId/confirm"
+          element={<ConfirmSubscription />}
+        />
+
+        {/* ==================================================
+            CUSTOMER INVOICES
+        ================================================== */}
+
+        <Route
+          path="/customer/invoices"
+          element={<Invoices />}
+        />
+
+        {/* ==================================================
+            CUSTOMER PAYMENTS
+        ================================================== */}
+
+        <Route
+          path="/customer/payments"
+          element={<Payment />}
+        />
+
+        {/* ==================================================
+            CUSTOMER PAYMENT HISTORY
+        ================================================== */}
+
+        <Route
+          path="/customer/payment-history"
+          element={<PaymentHistory />}
+        />
+
+        {/* ==================================================
+            CUSTOMER BILLING
+        ================================================== */}
+
+        <Route
+          path="/customer/billing"
+          element={<Billing />}
+        />
+
+        {/* ==================================================
+            CUSTOMER USAGE
+        ================================================== */}
+
+        <Route
+          path="/customer/usage"
+          element={<Usage />}
+        />
+
+        {/* ==================================================
+            CUSTOMER NOTIFICATIONS
+        ================================================== */}
+
+        <Route
+          path="/customer/notifications"
+          element={<Notifications />}
+        />
+
+        {/* ==================================================
+            CUSTOMER SETTINGS
+        ================================================== */}
+
+        <Route
+          path="/customer/settings"
+          element={<Settings />}
+        />
+
+        {/* ==================================================
+            CUSTOMER HELP & SUPPORT
+        ================================================== */}
+
+        <Route
+          path="/customer/help"
+          element={<HelpSupport />}
+        />
+
+        {/* ==================================================
+            CUSTOMER ADMIN SUPPORT
+
+            Customers can:
+            - Raise support tickets
+            - View ticket status
+            - Communicate with BillSphere admin
+        ================================================== */}
+
+        <Route
+          path="/customer/admin-support"
+          element={<AdminSupport />}
+        />
+
+        {/* ==================================================
+            CUSTOMER PLAN PAYMENT
+        ================================================== */}
+
+        <Route
+          path="/customer/plans/:planId/payment"
+          element={<Payment />}
+        />
+
+        {/* ==================================================
+            PAYMENT EMAIL CONFIRMATION
+
+            Opens inside the existing CustomerLayout
+            so the YES / NO email confirmation flow
+            remains inside the BillSphere customer shell.
+        ================================================== */}
+
+        <Route
+          path="/payment-confirmation"
+          element={<PaymentConfirmation />}
+        />
 
       </Route>
 
       {/* ==================================================
-          ADMIN DASHBOARD
+          ADMIN DASHBOARD HOME
       ================================================== */}
 
       <Route
@@ -178,39 +301,42 @@ function AppContent() {
 
       {/* ==================================================
           ADMIN / APPLICATION PAGES
-          
-          These continue using the existing
-          DashboardLayout.
+
+          These continue using DashboardLayout.
       ================================================== */}
 
       <Route element={<DashboardLayout />}>
 
-        {/* CUSTOMERS */}
+        {/* ==================================================
+            ADMIN CUSTOMERS
+        ================================================== */}
 
         <Route
           path="/customers"
           element={<Customers />}
         />
 
-        {/* ADMIN PLANS */}
-
-        
-
-        {/* INVOICES */}
+        {/* ==================================================
+            ADMIN INVOICES
+        ================================================== */}
 
         <Route
           path="/invoices"
           element={<Invoices />}
         />
 
-        {/* SETTINGS */}
+        {/* ==================================================
+            ADMIN SETTINGS
+        ================================================== */}
 
         <Route
           path="/settings"
           element={<Settings />}
         />
 
-        {/* PROFILE */}
+        {/* ==================================================
+            ADMIN PROFILE
+        ================================================== */}
 
         <Route
           path="/profile"

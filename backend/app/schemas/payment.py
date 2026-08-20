@@ -64,6 +64,55 @@ class PaymentCreate(PaymentBase):
     )
 
 
+class CheckoutRequest(BaseModel):
+    """Safe mock checkout request."""
+
+    plan_id: int = Field(..., gt=0)
+    payment_method: str = Field(
+        ...,
+        pattern="^mock_(success|failure)$",
+    )
+
+
+class CheckoutResponse(BaseModel):
+    """Result of a mock checkout lifecycle."""
+
+    checkout_status: str
+    payment_id: int
+    payment_status: str
+    invoice_id: int
+    invoice_status: str
+    subscription_id: int
+    subscription_status: str
+    plan_id: int
+    amount: Decimal
+    currency: str = "INR"
+    confirmation_expires_at: datetime | None = None
+    confirmation_url: str | None = None
+    mock_mode: bool = True
+
+
+class PaymentConfirmationRequest(BaseModel):
+    token: str = Field(..., min_length=32)
+    decision: str = Field(..., pattern="^(confirm|reject)$")
+
+
+class PaymentConfirmationResponse(BaseModel):
+    result: str
+    payment_id: int
+    payment_status: str
+    invoice_id: int
+    invoice_status: str
+    subscription_id: int
+    subscription_status: str
+    plan_id: int
+    plan_name: str
+    amount: Decimal
+    currency: str
+    billing_cycle: str
+    next_billing_date: datetime | None = None
+
+
 # ==========================================================
 # Update Payment
 # ==========================================================

@@ -511,20 +511,45 @@ def reset_password(
             detail="Invalid reset token",
         )
 
-    if (
-        not user.reset_token_expiry
-        or user.reset_token_expiry
-        < datetime.now(timezone.utc)
-    ):
+    # ------------------------------------------------------
+    # Validate reset token expiry
+    # ------------------------------------------------------
+
+    if not user.reset_token_expiry:
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Reset token expired",
         )
 
+    reset_token_expiry = user.reset_token_expiry
+
+    # PostgreSQL may return a naive datetime depending on
+    # the database column configuration. Normalize it to UTC.
+    if reset_token_expiry.tzinfo is None:
+
+        reset_token_expiry = reset_token_expiry.replace(
+            tzinfo=timezone.utc
+        )
+
+    if reset_token_expiry < datetime.now(timezone.utc):
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset token expired",
+        )
+
+    # ------------------------------------------------------
+    # Update password
+    # ------------------------------------------------------
+
     user.hashed_password = hash_password(
         new_password
     )
+
+    # ------------------------------------------------------
+    # Invalidate reset token after successful reset
+    # ------------------------------------------------------
 
     user.reset_token = None
 

@@ -39,6 +39,7 @@ from app.models.invoice_line_item import InvoiceLineItem
 
 from app.models.payment import Payment
 from app.models.payment_retry import PaymentRetry
+from app.models.payment_confirmation import PaymentConfirmation
 
 
 # ==========================================================
@@ -78,6 +79,7 @@ __all__ = [
     # Payment
     "Payment",
     "PaymentRetry",
+    "PaymentConfirmation",
 
     # Notifications / Audit
     "Notification",

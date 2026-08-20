@@ -392,6 +392,7 @@ def create_subscription(
     db: Session,
     subscription_data: SubscriptionCreate,
     created_by: int | None = None,
+    commit: bool = True,
 ) -> Subscription:
     """
     Create a new subscription.
@@ -421,6 +422,12 @@ def create_subscription(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Customer is inactive.",
+            )
+
+        if created_by is not None and customer.owner_id != created_by:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Customer not found.",
             )
 
         # --------------------------------------------------
@@ -579,8 +586,9 @@ def create_subscription(
             subscription,
         )
 
-        db.commit()
-        db.refresh(subscription)
+        if commit:
+            db.commit()
+            db.refresh(subscription)
 
         return subscription
 
@@ -616,13 +624,18 @@ def get_subscription_by_id(
             detail="A valid subscription_id is required.",
         )
 
-    subscription = (
+    query = (
         db.query(Subscription)
+        .join(Customer, Customer.id == Subscription.customer_id)
         .filter(
             Subscription.id == subscription_id,
         )
-        .first()
     )
+
+    if created_by is not None:
+        query = query.filter(Customer.owner_id == created_by)
+
+    subscription = query.first()
 
     if not subscription:
         raise HTTPException(
@@ -661,7 +674,13 @@ def list_subscriptions(
             detail="Page size must be between 1 and 100.",
         )
 
-    query = db.query(Subscription)
+    query = (
+        db.query(Subscription)
+        .join(Customer, Customer.id == Subscription.customer_id)
+    )
+
+    if created_by is not None:
+        query = query.filter(Customer.owner_id == created_by)
 
     if status_filter:
         normalized_filter = (
@@ -1628,6 +1647,7 @@ def change_plan_with_proration(
                                 f"downgrade to "
                                 f"{new_plan.name}."
                             ),
+                            commit=False,
                         )
 
         # --------------------------------------------------

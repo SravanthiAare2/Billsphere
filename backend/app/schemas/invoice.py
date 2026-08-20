@@ -96,7 +96,14 @@ class InvoiceCreate(InvoiceBase):
     Request schema for creating an invoice.
     """
 
-    pass
+    total_amount: Decimal | None = Field(
+        default=None,
+        gt=0,
+        description=(
+            "Optional client display value. The backend recalculates "
+            "the authoritative total from the invoice amount and tax rules."
+        ),
+    )
 
 
 # ==========================================================

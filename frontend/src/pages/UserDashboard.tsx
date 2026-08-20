@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -9,6 +8,7 @@ import {
   ChevronRight,
   CreditCard,
   Gauge,
+  Headset,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -24,34 +24,37 @@ import {
   X,
   XCircle,
   Clock3,
+  History,
 } from "lucide-react";
 
 import {
   getMySubscriptions,
+  getPlan,
+  getMyInvoices,
+  getMyPayments,
+  getCurrentUser,
   cancelSubscription,
   renewSubscription,
   extendSubscription,
   convertTrialToPaid,
-} from "../assets/services/api";
+} from "../services/api";
 
 import { useToast } from "../components/ToastProvider";
 
 interface Subscription {
   id: number;
   plan_id: number;
-  plan_name: string | null;
-  billing_interval: string | null;
-  price: number | null;
-  status:
-    | "active"
-    | "trial"
-    | "pending"
-    | "past_due"
-    | "cancelled";
-  trial_ends_at: string | null;
-  current_period_start: string;
-  current_period_end: string;
+  plan_name?: string | null;
+  billing_interval?: string | null;
+  billing_cycle?: string | null;
+  price?: number | null;
+  status: string;
+  trial_ends_at?: string | null;
+  current_period_start?: string | null;
+  current_period_end?: string | null;
+  next_billing_date?: string | null;
   cancel_at_period_end: boolean;
+  start_date?: string | null;
 }
 
 function money(value: number | string | null | undefined) {
@@ -104,21 +107,150 @@ function UserDashboard() {
   const { notify } = useToast();
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [actionId, setActionId] = useState<number | null>(null);
+
+  // =====================================================
+  // CURRENT USER
+  // =====================================================
+
+  const [userName, setUserName] = useState("Customer");
+
+  async function loadCurrentUser() {
+    try {
+      const user = await getCurrentUser();
+
+      const firstName =
+        typeof user?.first_name === "string"
+          ? user.first_name.trim()
+          : "";
+
+      const lastName =
+        typeof user?.last_name === "string"
+          ? user.last_name.trim()
+          : "";
+
+      const displayName =
+        firstName ||
+        lastName ||
+        "Customer";
+
+      setUserName(displayName);
+    } catch {
+      setUserName("Customer");
+    }
+  }
+
+  // =====================================================
+  // LOAD CUSTOMER BILLING DATA
+  // =====================================================
 
   async function loadSubscriptions() {
     setLoading(true);
 
     try {
-      const data = await getMySubscriptions();
+      const [data, invoiceData, paymentData] = await Promise.all([
+        getMySubscriptions(),
+        getMyInvoices(),
+        getMyPayments(),
+      ]);
+
+      const subscriptionItems: Subscription[] = Array.isArray(data)
+        ? data
+        : data
+        ? [data]
+        : [];
+
+      let checkoutIdentity: {
+        subscription_id?: number;
+        plan_id?: number;
+      } = {};
+
+      try {
+        checkoutIdentity = JSON.parse(
+          localStorage.getItem(
+            "billsphere_last_successful_checkout"
+          ) || "{}"
+        );
+      } catch {
+        checkoutIdentity = {};
+      }
+
+      const matchedCheckout = subscriptionItems.find(
+        (subscription) =>
+          subscription.id === checkoutIdentity.subscription_id &&
+          subscription.plan_id === checkoutIdentity.plan_id &&
+          ["active", "trial", "past_due"].includes(
+            subscription.status
+          )
+      );
+
+      const currentItem =
+        matchedCheckout ||
+        subscriptionItems
+          .filter((subscription) =>
+            ["active", "trial", "past_due"].includes(
+              subscription.status
+            )
+          )
+          .sort((left, right) => {
+            const leftDate = new Date(
+              left.start_date ||
+                left.current_period_start ||
+                0
+            ).getTime();
+
+            const rightDate = new Date(
+              right.start_date ||
+                right.current_period_start ||
+                0
+            ).getTime();
+
+            return rightDate - leftDate || right.id - left.id;
+          })[0] ||
+        subscriptionItems[0];
+
+      const plan = currentItem
+        ? await getPlan(currentItem.plan_id)
+        : null;
 
       setSubscriptions(
-        Array.isArray(data)
-          ? data
-          : data
-          ? [data]
+        subscriptionItems.map((subscription) => ({
+          ...subscription,
+          plan_name:
+            plan &&
+            subscription.plan_id === currentItem?.plan_id
+              ? plan.name
+              : undefined,
+          price:
+            plan &&
+            subscription.plan_id === currentItem?.plan_id
+              ? plan.price
+              : undefined,
+          billing_interval:
+            plan &&
+            subscription.plan_id === currentItem?.plan_id
+              ? plan.billing_cycle
+              : subscription.billing_cycle,
+        }))
+      );
+
+      setInvoices(
+        Array.isArray(invoiceData)
+          ? invoiceData
+          : invoiceData
+          ? [invoiceData]
+          : []
+      );
+
+      setPayments(
+        Array.isArray(paymentData)
+          ? paymentData
+          : paymentData
+          ? [paymentData]
           : []
       );
     } catch (error: any) {
@@ -135,8 +267,13 @@ function UserDashboard() {
   }
 
   useEffect(() => {
+    loadCurrentUser();
     loadSubscriptions();
   }, []);
+
+  // =====================================================
+  // CURRENT SUBSCRIPTION
+  // =====================================================
 
   const currentSubscription = useMemo(() => {
     return (
@@ -157,21 +294,43 @@ function UserDashboard() {
     );
   }, [subscriptions]);
 
-  const subscriptionStatus = currentSubscription?.status || "inactive";
+  const subscriptionStatus =
+    currentSubscription?.status || "inactive";
 
   const planPrice = Number(
     currentSubscription?.price || 0
   );
 
-  /*
-   * This is only a dashboard estimate.
-   * Replace with the real tax/invoice amount once
-   * invoice APIs are connected.
-   */
-  const estimatedNextBill =
-    currentSubscription
-      ? planPrice * 1.18
-      : 0;
+  const currentInvoice = useMemo(
+    () =>
+      invoices.find(
+        (invoice) =>
+          invoice.subscription_id ===
+          currentSubscription?.id
+      ) ||
+      invoices[0] ||
+      null,
+    [invoices, currentSubscription]
+  );
+
+  const currentPayment = useMemo(
+    () =>
+      payments.find(
+        (payment) =>
+          payment.invoice_id === currentInvoice?.id
+      ) ||
+      payments[0] ||
+      null,
+    [payments, currentInvoice]
+  );
+
+  const nextBill =
+    currentSubscription?.next_billing_date ||
+    currentSubscription?.current_period_end;
+
+  // =====================================================
+  // SUBSCRIPTION ACTION
+  // =====================================================
 
   async function runAction(
     id: number,
@@ -296,9 +455,17 @@ function UserDashboard() {
             width: 5px;
           }
 
+          .bs-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
           .bs-scroll::-webkit-scrollbar-thumb {
             background: rgba(214,179,106,0.25);
             border-radius: 20px;
+          }
+
+          .bs-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(214,179,106,0.4);
           }
         `}
       </style>
@@ -316,8 +483,9 @@ function UserDashboard() {
           <div className="flex items-center gap-4">
 
             <button
+              type="button"
               onClick={() => setMobileMenu(true)}
-              className="rounded-xl p-2 text-white/60 hover:bg-white/5 lg:hidden"
+              className="rounded-xl p-2 text-white/60 transition hover:bg-white/5 lg:hidden"
             >
               <Menu size={22} />
             </button>
@@ -328,9 +496,11 @@ function UserDashboard() {
             >
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#D6B36A]/30 bg-[#D6B36A]/10">
+
                 <span className="text-lg font-black tracking-tight bs-gold">
                   BS
                 </span>
+
               </div>
 
               <div className="hidden sm:block">
@@ -353,7 +523,10 @@ function UserDashboard() {
 
           <div className="flex items-center gap-3">
 
-            <button className="relative rounded-xl p-2.5 text-white/55 hover:bg-white/5 hover:text-white">
+            <button
+              type="button"
+              className="relative rounded-xl p-2.5 text-white/55 transition hover:bg-white/5 hover:text-white"
+            >
 
               <Bell size={19} />
 
@@ -363,7 +536,10 @@ function UserDashboard() {
 
             <div className="hidden h-8 w-px bg-white/10 sm:block" />
 
-            <button className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-white/5">
+            <button
+              type="button"
+              className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-white/5"
+            >
 
               <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D6B36A]/30 bg-[#D6B36A]/10">
 
@@ -377,7 +553,7 @@ function UserDashboard() {
               <div className="hidden text-left sm:block">
 
                 <p className="text-sm font-medium text-white">
-                  Sravanthi
+                  {userName}
                 </p>
 
                 <p className="text-[10px] text-white/35">
@@ -425,13 +601,22 @@ function UserDashboard() {
 
             <div className="flex h-[72px] items-center justify-between border-b border-white/[0.06] px-5">
 
-              <span className="font-bold tracking-[0.18em]">
-                BILLSPHERE
-              </span>
+              <div>
+
+                <p className="font-bold tracking-[0.18em] text-white">
+                  BILLSPHERE
+                </p>
+
+                <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+                  Billing OS
+                </p>
+
+              </div>
 
               <button
+                type="button"
                 onClick={() => setMobileMenu(false)}
-                className="rounded-lg p-2 text-white/50 hover:bg-white/5"
+                className="rounded-lg p-2 text-white/50 transition hover:bg-white/5 hover:text-white"
               >
                 <X size={20} />
               </button>
@@ -477,7 +662,7 @@ function UserDashboard() {
               </div>
 
               <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                Good morning, Sravanthi 👋
+                Hello {userName}, welcome back 👋
               </h1>
 
               <p className="mt-2 text-sm text-white/45">
@@ -487,7 +672,7 @@ function UserDashboard() {
             </div>
 
             <Link
-  to="/customer/plans"
+              to="/customer/plans"
               className="bs-gold-button inline-flex w-fit items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-[0.08em]"
             >
               Explore Plans
@@ -526,14 +711,15 @@ function UserDashboard() {
               label="Next Bill"
               value={
                 currentSubscription
-                  ? money(estimatedNextBill)
+                  ? money(
+                      currentInvoice?.total_amount ??
+                        planPrice
+                    )
                   : "—"
               }
               sub={
                 currentSubscription
-                  ? formatDate(
-                      currentSubscription.current_period_end
-                    )
+                  ? formatDate(nextBill)
                   : "No upcoming bill"
               }
               icon={<CalendarDays size={18} />}
@@ -542,13 +728,17 @@ function UserDashboard() {
             <StatCard
               label="Billing"
               value={
-                currentSubscription
-                  ? money(planPrice)
+                currentPayment
+                  ? money(currentPayment.amount)
                   : "₹0.00"
               }
               sub={
-                currentSubscription
-                  ? "Current recurring amount"
+                currentPayment
+                  ? `${currentPayment.status} payment${
+                      currentInvoice?.invoice_number
+                        ? ` • ${currentInvoice.invoice_number}`
+                        : ""
+                    }`
                   : "No billing yet"
               }
               icon={<Wallet size={18} />}
@@ -611,7 +801,7 @@ function UserDashboard() {
                   () =>
                     cancelSubscription(
                       currentSubscription.id,
-                      false
+                      "Cancel at period end"
                     ),
                   `${currentSubscription.plan_name} will cancel at the end of the billing period.`
                 );
@@ -624,7 +814,7 @@ function UserDashboard() {
                   () =>
                     cancelSubscription(
                       currentSubscription.id,
-                      true
+                      "Immediate cancellation"
                     ),
                   `${currentSubscription.plan_name} cancelled immediately.`
                 );
@@ -822,7 +1012,7 @@ function UserDashboard() {
               </div>
 
               <Link
-                to="/invoices"
+                to="/customer/invoices"
                 className="flex items-center gap-1 text-xs text-white/40 hover:text-[#D6B36A]"
               >
                 View all
@@ -883,7 +1073,7 @@ function UserDashboard() {
           </section>
 
           {/* =================================================
-              RECENT INVOICES PLACEHOLDER
+              RECENT INVOICES
           ================================================= */}
 
           <section className="mt-8 pb-10">
@@ -903,7 +1093,7 @@ function UserDashboard() {
               </div>
 
               <Link
-                to="/invoices"
+                to="/customer/invoices"
                 className="flex items-center gap-1 text-xs text-white/40 hover:text-[#D6B36A]"
               >
                 View all invoices
@@ -936,7 +1126,7 @@ function UserDashboard() {
                 </p>
 
                 <Link
-                  to="/invoices"
+                  to="/customer/invoices"
                   className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[#D6B36A]/20 px-4 py-2 text-xs font-semibold text-[#D6B36A] transition hover:bg-[#D6B36A]/10"
                 >
                   Open Invoices
@@ -976,8 +1166,7 @@ function StatCard({
   gold?: boolean;
   status?: string;
 }) {
-  const isGood =
-    status === "active";
+  const isGood = status === "active";
 
   return (
     <div className="bs-panel rounded-2xl p-5">
@@ -1111,7 +1300,7 @@ function SubscriptionPanel({
           </p>
 
           <Link
-  to="/customer/plans"
+            to="/customer/plans"
             className="bs-gold-button mt-5 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold"
           >
             Explore Plans
@@ -1204,6 +1393,7 @@ function SubscriptionPanel({
 
             {subscription.status === "trial" && (
               <button
+                type="button"
                 onClick={onConvertTrial}
                 disabled={busy}
                 className="bs-gold-button rounded-xl px-4 py-2 text-xs font-bold disabled:opacity-50"
@@ -1216,6 +1406,7 @@ function SubscriptionPanel({
 
             {subscription.status === "past_due" && (
               <button
+                type="button"
                 onClick={onRenew}
                 disabled={busy}
                 className="bs-gold-button rounded-xl px-4 py-2 text-xs font-bold disabled:opacity-50"
@@ -1228,6 +1419,7 @@ function SubscriptionPanel({
 
             {subscription.status === "active" && (
               <button
+                type="button"
                 onClick={onExtend}
                 disabled={busy}
                 className="bs-gold-button rounded-xl px-4 py-2 text-xs font-bold disabled:opacity-50"
@@ -1241,6 +1433,7 @@ function SubscriptionPanel({
             {subscription.status === "active" &&
               !subscription.cancel_at_period_end && (
                 <button
+                  type="button"
                   onClick={onCancelPeriodEnd}
                   disabled={busy}
                   className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs font-medium text-white/50 hover:border-[#D6B36A]/20 hover:text-[#D6B36A] disabled:opacity-50"
@@ -1252,6 +1445,7 @@ function SubscriptionPanel({
             {(subscription.status === "active" ||
               subscription.status === "trial") && (
               <button
+                type="button"
                 onClick={onCancelImmediate}
                 disabled={busy}
                 className="rounded-xl border border-red-400/10 px-4 py-2 text-xs font-medium text-red-300/70 hover:bg-red-400/5 disabled:opacity-50"
@@ -1276,28 +1470,28 @@ function SubscriptionPanel({
 function QuickActions() {
   const actions = [
     {
-  label: "Change Plan",
-  description: "Upgrade or switch your plan",
-  icon: <Package size={16} />,
-  path: "/customer/plans",
-},
+      label: "Change Plan",
+      description: "Upgrade or switch your plan",
+      icon: <Package size={16} />,
+      path: "/customer/plans",
+    },
     {
-  label: "View Invoices",
-  description: "Open your billing documents",
-  icon: <Receipt size={16} />,
-  path: "/customer/invoices",
-},
+      label: "View Invoices",
+      description: "Open your billing documents",
+      icon: <Receipt size={16} />,
+      path: "/customer/invoices",
+    },
     {
       label: "Payment Methods",
       description: "Manage your payment options",
       icon: <CreditCard size={16} />,
-      path: "/payments",
+      path: "/customer/payments",
     },
     {
       label: "Billing Settings",
       description: "Manage account billing",
       icon: <Settings size={16} />,
-      path: "/settings",
+      path: "/customer/settings",
     },
   ];
 
@@ -1478,7 +1672,8 @@ function ActivityRow({
 }
 
 /* =========================================================
-   SIDEBAR
+   CUSTOMER SIDEBAR
+   THIS IS THE ONLY SIDEBAR USED BY USER DASHBOARD
 ========================================================= */
 
 function Sidebar({
@@ -1498,44 +1693,53 @@ function Sidebar({
       icon: <CreditCard size={17} />,
     },
     {
-  label: "Plans",
-  path: "/customer/plans",
-  icon: <Package size={17} />,
-},
+      label: "Plans",
+      path: "/customer/plans",
+      icon: <Package size={17} />,
+    },
     {
-  label: "Invoices",
-  path: "/customer/invoices",
-  icon: <Receipt size={17} />,
-},
+      label: "Invoices",
+      path: "/customer/invoices",
+      icon: <Receipt size={17} />,
+    },
     {
       label: "Payments",
-      path: "/payments",
+      path: "/customer/payments",
       icon: <Wallet size={17} />,
     },
     {
+      label: "Payment History",
+      path: "/customer/payment-history",
+      icon: <History size={17} />,
+    },
+    {
       label: "Billing",
-      path: "/billing",
+      path: "/customer/billing",
       icon: <RefreshCw size={17} />,
     },
     {
       label: "Usage",
-      path: "/usage",
+      path: "/customer/usage",
       icon: <Gauge size={17} />,
     },
     {
       label: "Notifications",
-      path: "/notifications",
+      path: "/customer/notifications",
       icon: <Bell size={17} />,
     },
     {
       label: "Settings",
-      path: "/settings",
+      path: "/customer/settings",
       icon: <Settings size={17} />,
     },
   ];
 
   return (
     <div className="bs-scroll flex h-full flex-col overflow-y-auto px-3 py-5">
+
+      {/* =====================================================
+          MAIN NAVIGATION
+      ===================================================== */}
 
       <nav className="space-y-1">
 
@@ -1552,7 +1756,7 @@ function Sidebar({
             }`}
           >
 
-            <span>
+            <span className="flex shrink-0 items-center justify-center">
               {item.icon}
             </span>
 
@@ -1566,19 +1770,30 @@ function Sidebar({
 
       </nav>
 
+      {/* =====================================================
+          SUPPORT
+      ===================================================== */}
+
       <div className="my-5 h-px bg-white/[0.06]" />
 
       <div className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.22em] text-white/20">
         Support
       </div>
 
+      {/* =====================================================
+          HELP & SUPPORT
+      ===================================================== */}
+
       <Link
-        to="/help"
+        to="/customer/help"
         onClick={onNavigate}
         className="bs-sidebar-item flex items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium text-white/50"
       >
 
-        <ShieldCheck size={17} />
+        <ShieldCheck
+          size={17}
+          className="shrink-0"
+        />
 
         <span>
           Help & Support
@@ -1586,49 +1801,87 @@ function Sidebar({
 
       </Link>
 
-      <div className="mt-auto pt-6">
+      {/* =====================================================
+          ADMIN SUPPORT
+      ===================================================== */}
 
-        <button
-          className="bs-sidebar-item flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium text-white/45 hover:text-red-300"
-          onClick={() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("access_token");
-            window.location.href = "/login";
-          }}
-        >
+      <Link
+        to="/customer/admin-support"
+        onClick={onNavigate}
+        className="bs-sidebar-item mt-1 flex items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium text-white/50"
+      >
 
-          <LogOut size={17} />
+        <Headset
+          size={17}
+          className="shrink-0"
+        />
 
-          <span>
-            Logout
+        <span>
+          Admin Support
+        </span>
+
+      </Link>
+
+      {/* =====================================================
+          ACCOUNT ACTIONS
+      ===================================================== */}
+
+      <div className="my-5 h-px bg-white/[0.06]" />
+
+      {/* =====================================================
+          LOGOUT
+      ===================================================== */}
+
+      <button
+        type="button"
+        className="bs-sidebar-item flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium text-white/45 hover:text-red-300"
+        onClick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("access_token");
+
+          window.location.href = "/login";
+        }}
+      >
+
+        <LogOut
+          size={17}
+          className="shrink-0"
+        />
+
+        <span>
+          Logout
+        </span>
+
+      </button>
+
+      {/* =====================================================
+          SECURITY CARD
+      ===================================================== */}
+
+      <div className="mt-5 rounded-xl border border-[#D6B36A]/10 bg-[#D6B36A]/[0.03] p-3.5">
+
+        <div className="flex items-center gap-2">
+
+          <ShieldCheck
+            size={14}
+            className="bs-gold"
+          />
+
+          <span className="text-[10px] font-medium text-white/50">
+            Secure by design
           </span>
-
-        </button>
-
-        <div className="mt-5 rounded-xl border border-[#D6B36A]/10 bg-[#D6B36A]/[0.03] p-3.5">
-
-          <div className="flex items-center gap-2">
-
-            <ShieldCheck
-              size={14}
-              className="bs-gold"
-            />
-
-            <span className="text-[10px] font-medium text-white/50">
-              Secure by design
-            </span>
-
-          </div>
-
-          <p className="mt-2 text-[9px] leading-4 text-white/25">
-            Your billing information is protected with
-            secure authentication and encrypted
-            connections.
-          </p>
 
         </div>
 
+        <p className="mt-2 text-[9px] leading-4 text-white/25">
+          Your billing information is protected with
+          secure authentication and encrypted
+          connections.
+        </p>
+
       </div>
+
+      <div className="h-4 shrink-0" />
 
     </div>
   );

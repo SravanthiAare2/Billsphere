@@ -44,6 +44,7 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
+    synonym,
 )
 
 from app.core.database import Base
@@ -118,6 +119,10 @@ class User(Base):
         String(255),
         nullable=False,
     )
+
+    # Compatibility alias for older service/test payloads. The database
+    # remains canonical on hashed_password and never stores plaintext.
+    password_hash = synonym("hashed_password")
 
     # ==========================================================
     # Authorization

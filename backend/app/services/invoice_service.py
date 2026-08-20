@@ -113,11 +113,19 @@ def _recalculate_invoice_totals(invoice: Invoice) -> None:
     invoice.total_amount = money(taxable + tax)
 
 
-def create_invoice(db: Session, invoice_data: InvoiceCreate) -> Invoice:
+def create_invoice(
+    db: Session,
+    invoice_data: InvoiceCreate,
+    owner_id: int | None = None,
+    commit: bool = True,
+) -> Invoice:
     """Create an invoice and its real database line items."""
     customer = db.query(Customer).filter(Customer.id == invoice_data.customer_id).first()
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found.")
+
+    if owner_id is not None and customer.owner_id != owner_id:
+        raise HTTPException(status_code=404, detail="Invoice customer not found.")
 
     amount = money(invoice_data.amount)
     if amount <= 0:
@@ -179,22 +187,37 @@ def create_invoice(db: Session, invoice_data: InvoiceCreate) -> Invoice:
         entity_type="invoice",
     ))
 
-    db.commit()
-    db.refresh(invoice)
+    if commit:
+        db.commit()
+        db.refresh(invoice)
     return invoice
 
 
-def get_invoice_by_id(db: Session, invoice_id: int) -> Invoice | None:
-    return (
+def get_invoice_by_id(
+    db: Session,
+    invoice_id: int,
+    owner_id: int | None = None,
+) -> Invoice | None:
+    query = (
         db.query(Invoice)
         .options(joinedload(Invoice.line_items))
         .filter(Invoice.id == invoice_id)
-        .first()
     )
 
+    if owner_id is not None:
+        query = query.join(Customer, Customer.id == Invoice.customer_id).filter(
+            Customer.owner_id == owner_id,
+        )
 
-def get_invoice(db: Session, invoice_id: int) -> Invoice:
-    invoice = get_invoice_by_id(db, invoice_id)
+    return query.first()
+
+
+def get_invoice(
+    db: Session,
+    invoice_id: int,
+    owner_id: int | None = None,
+) -> Invoice:
+    invoice = get_invoice_by_id(db, invoice_id, owner_id=owner_id)
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found.")
     return invoice
@@ -210,10 +233,19 @@ def get_invoice_line_items(db: Session, invoice_id: int) -> list[InvoiceLineItem
     )
 
 
-def list_invoices(db: Session, page: int = 1, page_size: int = 10) -> dict:
+def list_invoices(
+    db: Session,
+    page: int = 1,
+    page_size: int = 10,
+    owner_id: int | None = None,
+) -> dict:
     if page < 1 or page_size < 1 or page_size > 100:
         raise HTTPException(status_code=400, detail="Invalid pagination values.")
     query = db.query(Invoice).options(joinedload(Invoice.line_items))
+    if owner_id is not None:
+        query = query.join(Customer, Customer.id == Invoice.customer_id).filter(
+            Customer.owner_id == owner_id,
+        )
     total = query.count()
     items = (
         query.order_by(Invoice.id.desc())
@@ -224,8 +256,13 @@ def list_invoices(db: Session, page: int = 1, page_size: int = 10) -> dict:
     return {"total": total, "page": page, "page_size": page_size, "items": items}
 
 
-def update_invoice(db: Session, invoice_id: int, invoice_data: InvoiceUpdate) -> Invoice:
-    invoice = get_invoice(db, invoice_id)
+def update_invoice(
+    db: Session,
+    invoice_id: int,
+    invoice_data: InvoiceUpdate,
+    owner_id: int | None = None,
+) -> Invoice:
+    invoice = get_invoice(db, invoice_id, owner_id=owner_id)
     data = invoice_data.model_dump(exclude_unset=True)
     for field, value in data.items():
         setattr(invoice, field, value)
@@ -234,8 +271,12 @@ def update_invoice(db: Session, invoice_id: int, invoice_data: InvoiceUpdate) ->
     return invoice
 
 
-def delete_invoice(db: Session, invoice_id: int) -> bool:
-    invoice = get_invoice(db, invoice_id)
+def delete_invoice(
+    db: Session,
+    invoice_id: int,
+    owner_id: int | None = None,
+) -> bool:
+    invoice = get_invoice(db, invoice_id, owner_id=owner_id)
     db.delete(invoice)
     db.commit()
     return True

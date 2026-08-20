@@ -1,483 +1,651 @@
 @import "tailwindcss";
 
+/* ============================================================
+   BILLSPHERE GLOBAL THEME
+============================================================ */
 
 :root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 
-  color-scheme: dark;
-
-  --bg: #050503;
-  --bg-strong: #0a0a06;
-
-  --text: #f7f2e2;
-  --muted: #a6a290;
-
-  --olive-deep: #2f3a12;
-  --olive: #5a6b28;
-  --olive-light: #8fae4a;
-  --bronze: #b8895a;
-  --champagne: #e8d9a0;
-  --pearl: #f7f2e2;
-  --gold-fleck: #d4af37;
-
-  --shadow: 0 30px 90px rgba(0,0,0,0.75);
-
+  color: #f7f2e2;
+  background: #050503;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-
-* { box-sizing: border-box; }
-
-
-html { scroll-behavior: smooth; }
-
+html {
+  scroll-behavior: smooth;
+  background: #050503;
+}
 
 body {
-
-  margin:0;
-
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
   background: #050503;
-
-  color:var(--text);
-
+  color: #f7f2e2;
 }
 
-
-a { text-decoration:none; }
-
-button { cursor:pointer; }
-
-
-/* ===================== GLASS PANEL ===================== */
-
-.panel {
-
- border: 1px solid rgba(143,174,74,0.24);
-
- background: rgba(255,255,255,0.035);
-
- backdrop-filter: blur(22px);
-
- box-shadow: var(--shadow);
-
+* {
+  box-sizing: border-box;
 }
 
-
-.panel:hover {
-
- border-color: rgba(232,217,160,0.55);
-
- transform: translateY(-4px);
-
- transition: 0.35s ease;
-
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
-
-/* ===================== SPOTLIGHT BACKGROUND ===================== */
-
-.spotlight {
-
- position: absolute;
-
- inset: 0;
-
- pointer-events: none;
-
- background:
-
- radial-gradient(ellipse 900px 500px at 15% -10%, rgba(143,174,74,0.28), transparent 60%),
-
- radial-gradient(ellipse 700px 500px at 88% 5%, rgba(184,137,90,0.2), transparent 60%),
-
- radial-gradient(ellipse 1000px 600px at 50% 120%, rgba(47,58,18,0.35), transparent 60%);
-
+button {
+  cursor: pointer;
 }
 
-
-/* ===================== LIVE BADGE ===================== */
-
-.live-dot {
-
- width:8px;
-
- height:8px;
-
- border-radius:50%;
-
- background: var(--olive-light);
-
- box-shadow: 0 0 0 0 rgba(143,174,74,0.6);
-
- animation: live-pulse 2s infinite;
-
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
+/* ============================================================
+   SCROLLBAR
+============================================================ */
 
-@keyframes live-pulse {
-
- 0% { box-shadow: 0 0 0 0 rgba(143,174,74,0.6); }
-
- 70% { box-shadow: 0 0 0 10px rgba(143,174,74,0); }
-
- 100% { box-shadow: 0 0 0 0 rgba(143,174,74,0); }
-
+::-webkit-scrollbar {
+  width: 8px;
 }
 
+::-webkit-scrollbar-track {
+  background: #050503;
+}
 
-/* ===================== PREMIUM BUTTONS ===================== */
+::-webkit-scrollbar-thumb {
+  background: #393728;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8f7a32;
+}
+
+/* ============================================================
+   SELECTION
+============================================================ */
+
+::selection {
+  background: rgba(212, 175, 55, 0.25);
+  color: #f7f2e2;
+}
+
+/* ============================================================
+   FOCUS
+============================================================ */
+
+:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   BILLSPHERE BUTTONS
+============================================================ */
+
+/*
+  IMPORTANT:
+  Buttons are intentionally DARK GOLD instead of pale gold.
+  White text remains highly visible.
+*/
 
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 
- position: relative;
+  min-height: 46px;
+  padding: 0.75rem 1.5rem;
 
- overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.65);
+  border-radius: 999px;
 
- display:inline-flex;
+  background:
+    linear-gradient(
+      135deg,
+      #6f5a1d 0%,
+      #9a7b24 45%,
+      #6f5718 100%
+    );
 
- align-items:center;
+  color: #ffffff;
 
- justify-content:center;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 
- gap:8px;
+  box-shadow:
+    0 8px 30px rgba(212, 175, 55, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 
- border-radius:999px;
-
- padding: 0.9rem 1.6rem;
-
- font-weight:700;
-
- color:#0a0a06;
-
- background: linear-gradient(100deg, var(--pearl), var(--champagne) 30%, var(--gold-fleck) 55%, var(--bronze) 75%, var(--olive));
-
- box-shadow: 0 0 45px rgba(184,137,90,0.45), 0 0 70px rgba(143,174,74,0.3);
-
- transition: 0.3s ease;
-
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
-
-
-.btn-primary::after {
-
- content:"";
-
- position:absolute;
-
- top:0;
-
- left:-60%;
-
- width:40%;
-
- height:100%;
-
- background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
-
- transform: skewX(-20deg);
-
- animation: sweep 3.2s ease-in-out infinite;
-
-}
-
-
-@keyframes sweep {
-
- 0% { left: -60%; }
-
- 60% { left: 130%; }
-
- 100% { left: 130%; }
-
-}
-
 
 .btn-primary:hover {
+  transform: translateY(-2px);
 
- transform: translateY(-2px);
+  background:
+    linear-gradient(
+      135deg,
+      #856d25 0%,
+      #b08d2e 48%,
+      #80651d 100%
+    );
 
- box-shadow: 0 0 65px rgba(184,137,90,0.6), 0 0 90px rgba(143,174,74,0.4);
+  border-color: rgba(232, 217, 160, 0.8);
 
+  box-shadow:
+    0 14px 40px rgba(212, 175, 55, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   SECONDARY / GHOST BUTTON
+============================================================ */
 
 .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 
- display:inline-flex;
+  min-height: 46px;
+  padding: 0.75rem 1.5rem;
 
- align-items:center;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 999px;
 
- justify-content:center;
+  background: rgba(255, 255, 255, 0.025);
 
- gap:8px;
+  color: #f7f2e2;
 
- border-radius:999px;
+  font-size: 0.875rem;
+  font-weight: 700;
 
- padding: 0.85rem 1.5rem;
+  backdrop-filter: blur(14px);
 
- border: 1px solid rgba(143,174,74,0.35);
-
- color: var(--champagne);
-
- background: rgba(255,255,255,0.03);
-
- backdrop-filter: blur(15px);
-
- transition: .3s;
-
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
-
 
 .btn-ghost:hover {
+  transform: translateY(-2px);
 
- background: rgba(143,174,74,0.12);
+  border-color: rgba(212, 175, 55, 0.55);
 
- border-color: var(--bronze);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.09),
+      rgba(255, 255, 255, 0.035)
+    );
 
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-
-/* ===================== BENTO CARDS ===================== */
-
-.bento-card {
-
- position: relative;
-
- overflow: hidden;
-
- border: 1px solid rgba(255,255,255,0.08);
-
- background: linear-gradient(160deg, #14140f, #080805);
-
- box-shadow: 0 30px 80px rgba(0,0,0,0.7);
-
- transition: 0.35s ease;
-
-}
-
-
-.bento-card:hover {
-
- transform: translateY(-6px);
-
- border-color: rgba(184,137,90,0.5);
-
- box-shadow: 0 30px 90px rgba(143,174,74,0.2), 0 0 40px rgba(184,137,90,0.15);
-
-}
-
-
-.bento-card::before {
-
- content:"";
-
- position:absolute;
-
- inset:-1px;
-
- background: radial-gradient(280px 280px at var(--mx,50%) var(--my,0%), rgba(212,175,55,0.18), transparent 60%);
-
- opacity:0;
-
- transition: opacity .3s ease;
-
-}
-
-
-.bento-card:hover::before { opacity:1; }
-
-
-/* GRADIENT BLOB HERO CARD */
-
-.blob-card {
-
- position: relative;
-
- overflow: hidden;
-
- border-radius: 28px;
-
- background: linear-gradient(135deg, #e8d9a0, #b8895a 40%, #5a6b28 75%, #2f3a12);
-
- box-shadow: 0 30px 80px rgba(184,137,90,0.35);
-
-}
-
-
-.blob-card::before {
-
- content:"";
-
- position:absolute;
-
- inset:0;
-
- background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), transparent 55%);
-
- mix-blend-mode: overlay;
-
-}
-
-
-/* GROWTH BARS */
-
-.chart-bar {
-
- width:6px;
-
- border-radius:3px 3px 0 0;
-
- background: linear-gradient(to top, var(--olive), var(--gold-fleck));
-
-}
-
-
-/* AVATAR STACK */
-
-.avatar-stack img,
-.avatar-stack .avatar-fallback {
-
- width:32px;
-
- height:32px;
-
- border-radius:50%;
-
- border:2px solid #050503;
-
- margin-left:-10px;
-
- background: linear-gradient(135deg, var(--champagne), var(--olive));
-
- display:flex;
-
- align-items:center;
-
- justify-content:center;
-
- font-size:11px;
-
- font-weight:700;
-
- color:#0a0a06;
-
-}
-
-
-.avatar-stack :first-child { margin-left:0; }
-
-
-/* ===================== DIVIDER ===================== */
-
-.divider-glow {
-
- height:1px;
-
- width:100%;
-
- background: linear-gradient(90deg, transparent, rgba(143,174,74,0.6), rgba(212,175,55,0.55), rgba(184,137,90,0.55), rgba(143,174,74,0.6), transparent);
-
- box-shadow: 0 0 20px rgba(184,137,90,0.35);
-
-}
-
-
-/* ===================== RIBBON ===================== */
-
-.ribbon {
-
- position:absolute;
-
- top: 18px;
-
- right: -34px;
-
- transform: rotate(45deg);
-
- background: linear-gradient(135deg, var(--pearl), var(--gold-fleck), var(--bronze));
-
- color:#0a0a06;
-
- font-size: 11px;
-
- font-weight: 800;
-
- letter-spacing: .08em;
-
- padding: 5px 40px;
-
- box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-
-}
-
-
-/* ===================== METALLIC TEXT ===================== */
+/* ============================================================
+   GOLD TEXT
+============================================================ */
 
 .gold-text {
+  background:
+    linear-gradient(
+      90deg,
+      #f7f2e2 0%,
+      #e8d9a0 45%,
+      #d4af37 100%
+    );
 
- background: linear-gradient(90deg, var(--pearl), var(--champagne), var(--gold-fleck), var(--bronze), var(--olive-light), var(--champagne), var(--pearl));
+  -webkit-background-clip: text;
+  background-clip: text;
 
- background-size: 250% auto;
-
- -webkit-background-clip:text;
-
- background-clip:text;
-
- color:transparent;
-
- animation: shine 7s linear infinite;
-
+  color: transparent;
 }
 
+/* ============================================================
+   SPOTLIGHT
+============================================================ */
 
-@keyframes shine {
+.spotlight {
+  position: fixed;
+  inset: 0;
 
- 0%{ background-position: 0% center; }
+  pointer-events: none;
+  z-index: 1;
 
- 100%{ background-position: 250% center; }
+  background:
+    radial-gradient(
+      circle at 50% 15%,
+      rgba(212, 175, 55, 0.10),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 85% 35%,
+      rgba(143, 174, 74, 0.08),
+      transparent 28%
+    );
 
+  mix-blend-mode: screen;
 }
 
+/* ============================================================
+   LIVE DOT
+============================================================ */
 
-/* ===================== ANIMATIONS ===================== */
+.live-dot {
+  position: relative;
 
-@keyframes float {
+  display: inline-block;
 
- 0%{ transform:translateY(0); }
+  width: 7px;
+  height: 7px;
 
- 50%{ transform:translateY(-12px); }
+  border-radius: 50%;
 
- 100%{ transform:translateY(0); }
+  background: #8fae4a;
 
+  box-shadow:
+    0 0 0 4px rgba(143, 174, 74, 0.08),
+    0 0 14px rgba(143, 174, 74, 0.6);
+
+  animation: livePulse 2s infinite;
 }
 
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 
-.float { animation: float 6s ease-in-out infinite; }
-
-
-@keyframes glow {
-
- 0%{ opacity:.5; }
-
- 50%{ opacity:1; }
-
- 100%{ opacity:.5; }
-
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
 }
 
+/* ============================================================
+   BENTO CARDS
+============================================================ */
 
-.glow { animation: glow 3s infinite; }
+.bento-card {
+  position: relative;
+  overflow: hidden;
 
+  border: 1px solid rgba(255, 255, 255, 0.075);
 
-@keyframes pulse-ring {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20, 20, 15, 0.96),
+      rgba(8, 8, 6, 0.96)
+    );
 
- 0% { box-shadow: 0 0 0 0 rgba(184,137,90,0.45); }
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.42);
 
- 70% { box-shadow: 0 0 0 18px rgba(184,137,90,0); }
-
- 100% { box-shadow: 0 0 0 0 rgba(184,137,90,0); }
-
+  transition:
+    transform 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease;
 }
 
+.bento-card::before {
+  content: "";
 
-.pulse-ring { animation: pulse-ring 2.5s infinite; }
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  background:
+    radial-gradient(
+      300px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.10),
+      transparent 65%
+    );
+
+  transition: opacity 300ms ease;
+}
+
+.bento-card:hover {
+  transform: translateY(-4px);
+
+  border-color: rgba(212, 175, 55, 0.25);
+
+  box-shadow:
+    0 35px 90px rgba(0, 0, 0, 0.58),
+    0 0 50px rgba(212, 175, 55, 0.04);
+}
+
+.bento-card:hover::before {
+  opacity: 1;
+}
+
+/* ============================================================
+   GRADIENT / BLOB CARD
+============================================================ */
+
+.blob-card {
+  position: relative;
+  overflow: hidden;
+
+  border-radius: 28px;
+
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      #e8d9a0 0%,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 75% 40%,
+      #8fae4a 0%,
+      transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      #d4af37,
+      #6f5718
+    );
+
+  box-shadow:
+    0 30px 90px rgba(212, 175, 55, 0.14);
+}
+
+.blob-card::after {
+  content: "";
+
+  position: absolute;
+  width: 260px;
+  height: 260px;
+
+  right: -80px;
+  top: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  filter: blur(20px);
+}
+
+/* ============================================================
+   PANEL
+============================================================ */
+
+.panel {
+  border: 1px solid rgba(212, 175, 55, 0.18);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(23, 21, 13, 0.98),
+      rgba(10, 10, 7, 0.98)
+    );
+
+  box-shadow:
+    0 35px 100px rgba(0, 0, 0, 0.55);
+}
+
+/* ============================================================
+   DIVIDER GLOW
+============================================================ */
+
+.divider-glow {
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(212, 175, 55, 0.32),
+      transparent
+    );
+}
+
+/* ============================================================
+   CHART BAR
+============================================================ */
+
+.chart-bar {
+  flex: 1;
+
+  min-width: 3px;
+
+  border-radius: 999px 999px 2px 2px;
+
+  background:
+    linear-gradient(
+      to top,
+      #5a6b28,
+      #b8895a,
+      #e8d9a0
+    );
+
+  opacity: 0.78;
+
+  transition:
+    height 300ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.chart-bar:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   AVATARS
+============================================================ */
+
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-fallback {
+  display: flex;
+
+  width: 36px;
+  height: 36px;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-left: -7px;
+
+  border: 2px solid #050503;
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e8d9a0,
+      #6f5718
+    );
+
+  color: #090906;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.avatar-fallback:first-child {
+  margin-left: 0;
+}
+
+/* ============================================================
+   RIBBON
+============================================================ */
+
+.ribbon {
+  position: absolute;
+
+  right: -42px;
+  top: 20px;
+
+  width: 150px;
+
+  transform: rotate(35deg);
+
+  padding: 6px 0;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      90deg,
+      #6f5718,
+      #d4af37,
+      #6f5718
+    );
+
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+
+  box-shadow:
+    0 8px 25px rgba(212, 175, 55, 0.18);
+}
+
+/* ============================================================
+   GLASS
+============================================================ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.025);
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* ============================================================
+   PREMIUM GOLD BORDER
+============================================================ */
+
+.gold-border {
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+/* ============================================================
+   PREMIUM GOLD BUTTON OVERRIDES
+============================================================ */
+
+/*
+  These classes are useful for buttons written directly
+  with Tailwind utilities.
+*/
+
+.gold-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #685419,
+      #9b7a24,
+      #6c5418
+    );
+
+  color: #ffffff;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 10px 35px rgba(212, 175, 55, 0.15),
+    inset 0 1px rgba(255, 255, 255, 0.12);
+
+  transition: all 180ms ease;
+}
+
+.gold-button:hover {
+  transform: translateY(-2px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #806720,
+      #b18e2f,
+      #80651e
+    );
+
+  border-color: rgba(232, 217, 160, 0.8);
+
+  box-shadow:
+    0 15px 45px rgba(212, 175, 55, 0.22);
+}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 768px) {
+  .bento-card:hover {
+    transform: none;
+  }
+
+  .blob-card {
+    border-radius: 22px;
+  }
+
+  .btn-primary,
+  .btn-ghost {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

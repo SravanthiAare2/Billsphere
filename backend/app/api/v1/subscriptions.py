@@ -149,6 +149,28 @@ def list_all(
     )
 
 
+@router.get(
+    "/me",
+    response_model=SubscriptionListResponse,
+)
+def list_my_subscriptions(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=100, ge=1, le=100),
+    status_filter: str | None = Query(default=None),
+    db: Session = Depends(database_session),
+    current_user: dict = Depends(get_current_user_token),
+):
+    """Return subscriptions belonging to the authenticated customer."""
+
+    return list_subscriptions(
+        db=db,
+        created_by=int(current_user["sub"]),
+        page=page,
+        page_size=page_size,
+        status_filter=status_filter,
+    )
+
+
 # ==========================================================
 # Change Plan With Proration
 # ==========================================================
@@ -288,9 +310,13 @@ def activate(
     "/{subscription_id}/cancel",
     response_model=SubscriptionResponse,
 )
+@router.put(
+    "/{subscription_id}/cancel",
+    response_model=SubscriptionResponse,
+)
 def cancel(
     subscription_id: int,
-    request: SubscriptionCancelRequest,
+    request: SubscriptionCancelRequest | None = None,
     db: Session = Depends(database_session),
     current_user: dict = Depends(
         get_current_user_token,
@@ -308,7 +334,7 @@ def cancel(
         db=db,
         subscription_id=subscription_id,
         created_by=created_by,
-        reason=request.reason,
+        reason=request.reason if request else None,
     )
 
 

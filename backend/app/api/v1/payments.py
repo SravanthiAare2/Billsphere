@@ -25,11 +25,15 @@ from app.dependencies import (
 )
 
 from app.schemas.payment import (
+    CheckoutRequest,
+    CheckoutResponse,
     PaymentCreate,
     PaymentUpdate,
     PaymentResponse,
     PaymentListResponse,
     PaymentRefundRequest,
+    PaymentConfirmationRequest,
+    PaymentConfirmationResponse,
 )
 
 from app.services.payment_service import (
@@ -40,6 +44,9 @@ from app.services.payment_service import (
     mark_payment_success,
     mark_payment_failed,
     refund_payment,
+    checkout,
+    get_payment_confirmation,
+    confirm_payment_from_token,
 )
 
 
@@ -51,6 +58,51 @@ router = APIRouter(
     prefix="/payments",
     tags=["Payments"],
 )
+
+
+@router.get(
+    "/confirmation",
+    response_model=PaymentConfirmationResponse,
+)
+def payment_confirmation_details(
+    token: str = Query(..., min_length=32),
+    db: Session = Depends(database_session),
+):
+    return get_payment_confirmation(db, token)
+
+
+@router.post(
+    "/confirmation",
+    response_model=PaymentConfirmationResponse,
+)
+def payment_confirmation_action(
+    request: PaymentConfirmationRequest,
+    db: Session = Depends(database_session),
+):
+    return confirm_payment_from_token(
+        db,
+        request.token,
+        request.decision,
+    )
+
+
+@router.post(
+    "/checkout",
+    response_model=CheckoutResponse,
+    status_code=status.HTTP_200_OK,
+)
+def create_checkout(
+    checkout_data: CheckoutRequest,
+    db: Session = Depends(database_session),
+    current_user: dict = Depends(get_current_user_token),
+):
+    """Create and explicitly process a safe mock checkout."""
+
+    return checkout(
+        db,
+        checkout_data,
+        owner_id=int(current_user["sub"]),
+    )
 
 
 # ==========================================================
@@ -77,6 +129,7 @@ def create(
     return create_payment(
         db,
         payment_data,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -114,6 +167,7 @@ def list_all(
         db,
         page,
         page_size,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -140,6 +194,7 @@ def get(
     payment = get_payment_by_id(
         db,
         payment_id,
+        owner_id=int(current_user["sub"]),
     )
 
     if not payment:
@@ -178,6 +233,7 @@ def update(
         db,
         payment_id,
         payment_data,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -210,6 +266,7 @@ def success(
         db,
         payment_id,
         transaction_id,
+        owner_id=int(current_user["sub"]),
     )
 
 
@@ -236,6 +293,7 @@ def failed(
     return mark_payment_failed(
         db,
         payment_id,
+        owner_id=int(current_user["sub"]),
     )
 
 # ==========================================================
@@ -257,4 +315,5 @@ def refund(
         payment_id=payment_id,
         amount=request.amount,
         reason=request.reason,
+        owner_id=int(current_user["sub"]),
     )

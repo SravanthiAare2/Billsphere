@@ -381,6 +381,53 @@ def payment_failed_email(
 
 
 # ==========================================================
+# Customer: Payment Confirmation Required
+# ==========================================================
+
+
+def payment_confirmation_email(
+    customer_name: str,
+    plan_name: str,
+    billing_cycle: str,
+    amount: str,
+    currency: str,
+    payment_id: int,
+    invoice_number: str,
+    confirm_url: str,
+    reject_url: str,
+) -> tuple[str, str]:
+    subject = "Payment Confirmation Required - BillSphere"
+    body = f"""
+    <p>Hi {customer_name},</p>
+    <p>A payment confirmation is required for your BillSphere subscription.</p>
+    <p>Plan: <strong>{plan_name}</strong></p>
+    <p>Billing: <strong>{billing_cycle}</strong></p>
+    <p>Amount: <strong>{currency} {amount}</strong></p>
+    <p>Invoice: <strong>{invoice_number}</strong></p>
+    <p>Payment reference: <strong>#{payment_id}</strong></p>
+    <p>This payment is currently awaiting your confirmation.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding-right:10px;">
+          <a href="{confirm_url}" style="background:#4caf7d;color:#fff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:6px;display:inline-block;">YES - CONFIRM PAYMENT</a>
+        </td>
+        <td>
+          <a href="{reject_url}" style="background:#b34a4a;color:#fff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:6px;display:inline-block;">NO - REJECT PAYMENT</a>
+        </td>
+      </tr>
+    </table>
+    <p>If you did not initiate this payment, reject it.</p>
+    """
+    html = _base_template(
+        preheader="Your BillSphere payment is awaiting confirmation.",
+        heading="Payment Confirmation Required",
+        body_html=body,
+        footnote="This confirmation link expires and can only be used once.",
+    )
+    return subject, html
+
+
+# ==========================================================
 # Customer: Invoice Overdue
 # ==========================================================
 

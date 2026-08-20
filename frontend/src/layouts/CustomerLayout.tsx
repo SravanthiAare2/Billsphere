@@ -5,6 +5,7 @@ import {
   Bell,
   CreditCard,
   Gauge,
+  Headset,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -17,6 +18,7 @@ import {
   User,
   Wallet,
   X,
+  History,
 } from "lucide-react";
 
 function CustomerLayout() {
@@ -65,16 +67,23 @@ function CustomerLayout() {
             width: 5px;
           }
 
+          .customer-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
           .customer-scroll::-webkit-scrollbar-thumb {
             background: rgba(214,179,106,0.25);
             border-radius: 20px;
+          }
+
+          .customer-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(214,179,106,0.4);
           }
         `}
       </style>
 
       {/* =====================================================
           TOP NAVBAR
-          THIS NEVER CHANGES BETWEEN CUSTOMER PAGES
       ===================================================== */}
 
       <header className="fixed inset-x-0 top-0 z-50 h-[72px] border-b border-white/[0.06] bg-[#090909]/95 backdrop-blur-xl">
@@ -191,6 +200,7 @@ function CustomerLayout() {
       ===================================================== */}
 
       {mobileMenu && (
+
         <div className="fixed inset-0 z-[100] lg:hidden">
 
           <div
@@ -231,14 +241,11 @@ function CustomerLayout() {
           </aside>
 
         </div>
+
       )}
 
       {/* =====================================================
           CUSTOMER CONTENT
-          
-          ONLY THIS AREA CHANGES.
-          
-          Navbar + Sidebar stay mounted.
       ===================================================== */}
 
       <main className="ml-0 min-h-screen pt-[72px] lg:ml-[235px]">
@@ -268,7 +275,6 @@ function CustomerSidebar({
   const location = useLocation();
 
   const items = [
-
     {
       label: "Dashboard",
       path: "/customer/dashboard",
@@ -300,6 +306,12 @@ function CustomerSidebar({
     },
 
     {
+      label: "Payment History",
+      path: "/customer/payment-history",
+      icon: <History size={17} />,
+    },
+
+    {
       label: "Billing",
       path: "/customer/billing",
       icon: <RefreshCw size={17} />,
@@ -322,15 +334,9 @@ function CustomerSidebar({
       path: "/customer/settings",
       icon: <Settings size={17} />,
     },
-
   ];
 
   const isActive = (path: string) => {
-
-    if (path === "/customer/dashboard") {
-      return location.pathname === "/customer/dashboard";
-    }
-
     return location.pathname === path;
   };
 
@@ -338,7 +344,7 @@ function CustomerSidebar({
     <div className="customer-scroll flex h-full flex-col overflow-y-auto px-3 py-5">
 
       {/* =====================================================
-          NAVIGATION
+          MAIN NAVIGATION
       ===================================================== */}
 
       <nav className="space-y-1">
@@ -359,7 +365,7 @@ function CustomerSidebar({
               }`}
             >
 
-              <span className="shrink-0">
+              <span className="flex shrink-0 items-center justify-center">
                 {item.icon}
               </span>
 
@@ -374,15 +380,19 @@ function CustomerSidebar({
 
       </nav>
 
-      {/* DIVIDER */}
+      {/* =====================================================
+          SUPPORT SECTION
+      ===================================================== */}
 
       <div className="my-5 h-px bg-white/[0.06]" />
-
-      {/* SUPPORT */}
 
       <div className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.22em] text-white/20">
         Support
       </div>
+
+      {/* =====================================================
+          HELP & SUPPORT
+      ===================================================== */}
 
       <Link
         to="/customer/help"
@@ -394,7 +404,10 @@ function CustomerSidebar({
         }`}
       >
 
-        <ShieldCheck size={17} />
+        <ShieldCheck
+          size={17}
+          className="shrink-0"
+        />
 
         <span>
           Help & Support
@@ -403,60 +416,94 @@ function CustomerSidebar({
       </Link>
 
       {/* =====================================================
-          BOTTOM
+          ADMIN SUPPORT
       ===================================================== */}
 
-      <div className="mt-auto pt-6">
+      <Link
+        to="/customer/admin-support"
+        onClick={onNavigate}
+        className={`customer-sidebar-item mt-1 flex items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium ${
+          isActive("/customer/admin-support")
+            ? "customer-sidebar-active"
+            : "text-white/50"
+        }`}
+      >
 
-        {/* LOGOUT */}
+        <Headset
+          size={17}
+          className="shrink-0"
+        />
 
-        <button
-          type="button"
-          className="customer-sidebar-item flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium text-white/45 hover:text-red-300"
-          onClick={() => {
+        <span>
+          Admin Support
+        </span>
 
-            localStorage.removeItem("token");
-            localStorage.removeItem("access_token");
+      </Link>
 
-            window.location.href = "/login";
+      {/* =====================================================
+          DIVIDER BEFORE ACCOUNT ACTIONS
+      ===================================================== */}
 
-          }}
-        >
+      <div className="my-5 h-px bg-white/[0.06]" />
 
-          <LogOut size={17} />
+      {/* =====================================================
+          LOGOUT
+      ===================================================== */}
 
-          <span>
-            Logout
+      <button
+        type="button"
+        className="customer-sidebar-item flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium text-white/45 hover:text-red-300"
+        onClick={() => {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("access_token");
+
+          window.location.href = "/login";
+
+        }}
+      >
+
+        <LogOut
+          size={17}
+          className="shrink-0"
+        />
+
+        <span>
+          Logout
+        </span>
+
+      </button>
+
+      {/* =====================================================
+          SECURITY CARD
+      ===================================================== */}
+
+      <div className="mt-5 rounded-xl border border-[#D6B36A]/10 bg-[#D6B36A]/[0.03] p-3.5">
+
+        <div className="flex items-center gap-2">
+
+          <ShieldCheck
+            size={14}
+            className="customer-gold"
+          />
+
+          <span className="text-[10px] font-medium text-white/50">
+            Secure by design
           </span>
-
-        </button>
-
-        {/* SECURITY */}
-
-        <div className="mt-5 rounded-xl border border-[#D6B36A]/10 bg-[#D6B36A]/[0.03] p-3.5">
-
-          <div className="flex items-center gap-2">
-
-            <ShieldCheck
-              size={14}
-              className="customer-gold"
-            />
-
-            <span className="text-[10px] font-medium text-white/50">
-              Secure by design
-            </span>
-
-          </div>
-
-          <p className="mt-2 text-[9px] leading-4 text-white/25">
-            Your billing information is protected with
-            secure authentication and encrypted
-            connections.
-          </p>
 
         </div>
 
+        <p className="mt-2 text-[9px] leading-4 text-white/25">
+          Your billing information is protected with
+          secure authentication and encrypted
+          connections.
+        </p>
+
       </div>
+
+      {/* Bottom spacing */}
+
+      <div className="h-4 shrink-0" />
 
     </div>
   );
